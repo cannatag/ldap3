@@ -310,12 +310,8 @@ class MicrosoftExtendedOperations(ExtendedOperationContainer):
 
     def persistent_search(self,
                           search_base='',
-                          search_filter='(objectclass=*)',
                           search_scope=SUBTREE,
-                          dereference_aliases=DEREF_NEVER,
                           attributes=ALL_ATTRIBUTES,
-                          size_limit=0,
-                          time_limit=0,
                           streaming=True,
                           callback=None
                           ):
@@ -323,15 +319,11 @@ class MicrosoftExtendedOperations(ExtendedOperationContainer):
         if callback:
             streaming = False
         return ADPersistentSearch(self._connection,
-                                search_base,
-                                search_filter,
-                                search_scope,
-                                dereference_aliases,
-                                attributes,
-                                size_limit,
-                                time_limit,
-                                streaming,
-                                callback)
+                                  search_base,
+                                  search_scope,
+                                  attributes,
+                                  streaming,
+                                  callback)
 
 
 class ExtendedOperationsRoot(ExtendedOperationContainer):

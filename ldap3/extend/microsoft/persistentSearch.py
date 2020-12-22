@@ -38,12 +38,8 @@ class ADPersistentSearch(object):
     def __init__(self,
                  connection,
                  search_base,
-                 search_filter,
                  search_scope,
-                 dereference_aliases,
                  attributes,
-                 size_limit,
-                 time_limit,
                  streaming,
                  callback
                  ):
@@ -56,19 +52,18 @@ class ADPersistentSearch(object):
         self.connection = connection
         self.message_id = None
         self.base = search_base
-        self.filter = search_filter
         self.scope = search_scope
-        self.dereference_aliases = dereference_aliases
         self.attributes = attributes
-        self.size_limit = size_limit
-        self.time_limit = time_limit
+        self.controls = [persistent_search_control()]
+
+        # this is the only filter permitted by AD persistent search
+        self.filter = '(objectClass=*)'
+
         self.connection.strategy.streaming = streaming
         if callback and callable(callback):
             self.connection.strategy.callback = callback
         elif callback:
             raise LDAPExtensionError('callback is not callable')
-
-        self.controls = [persistent_search_control()]
 
         self.start()
 
@@ -83,10 +78,7 @@ class ADPersistentSearch(object):
             self.message_id = self.connection.search(search_base=self.base,
                                                      search_filter=self.filter,
                                                      search_scope=self.scope,
-                                                     dereference_aliases=self.dereference_aliases,
                                                      attributes=self.attributes,
-                                                     size_limit=self.size_limit,
-                                                     time_limit=self.time_limit,
                                                      controls=self.controls)
             self.connection.strategy.persistent_search_message_id = self.message_id
 

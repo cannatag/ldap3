@@ -58,13 +58,13 @@ Connection parameters are:
 
 * version: LDAP protocol version (defaults to 3).
 
-* authentication: authentication method, can be one of ANONYMOUS, SIMPLE, SASL or NTLM. Defaults to AUTH_ANONYMOUS if user and password are both None else defaults to AUTH_SIMPLE. NTLM uses NTLMv2 authentication. Username must be in the form domain\\user.
+* authentication: authentication method, can be one of ANONYMOUS, SIMPLE, SASL or NTLM. Defaults to ANONYMOUS if user and password are both None else defaults to SIMPLE. NTLM uses NTLMv2 authentication. Username must be in the form domain\\user.
 
 * client_strategy: communication strategy used by the client (defaults to SYNC).
 
 * auto_referrals: specify if the Connection must follows referrals automatically (defaults to True). Allowed referral servers are specified in the Server object.
 
-* sasl_mechanism: specify the SASL mechanism to use for AUTH_SASL authentication. Available mechanism are EXTERNAL, DIGEST-MD5 (**deprecated** by RFCs because insecure) and GSSAPI.
+* sasl_mechanism: specify the SASL mechanism to use for SASL authentication. Available mechanism are EXTERNAL, DIGEST-MD5 (**deprecated** by RFCs because insecure) and GSSAPI.
 
 * sasl_credential: an object specific to the SASL mechanism chosen. Refer to the documentation for each SASL mechanism supported.
 

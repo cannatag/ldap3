@@ -247,7 +247,7 @@ server schema you will get the properly formatted GUID value ('012381d3-3b1c-904
 connection.response[0]['attributes'] key dictionary instead of a sequence of bytes. Or if you request an attribute defined
 as an Interger in the schema you will get the value already converted to int. Furthermore for attributes defined as single
 valued in schema you will get the value instead of a list of values (that would always be one sized).
-To activate this feature you must set the get info to GET_SCHEMA_INFO or GET_ALL_INFO value when defining the server object
+To activate this feature you must set the get info to SCHEMA or ALL value when defining the server object
 and the 'check_names' attributes to True in the Connection object (True by default).
 
 There are a few of standard formatters defined in the library, most of them are defined in the relevants RFCs:

@@ -141,9 +141,9 @@ class Connection(object):
     :param version: LDAP version, default to 3
     :type version: int
     :param authentication: type of authentication
-    :type authentication: int, can be one of AUTH_ANONYMOUS, AUTH_SIMPLE or AUTH_SASL, as specified in ldap3
+    :type authentication: int, can be one of ANONYMOUS, SIMPLE or SASL, as specified in ldap3
     :param client_strategy: communication strategy used in the Connection
-    :type client_strategy: can be one of STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_LDIF_PRODUCER, STRATEGY_SYNC_RESTARTABLE, STRATEGY_REUSABLE_THREADED as specified in ldap3
+    :type client_strategy: can be one of SYNC, ASYNC, LDIF, RESTARTABLE, REUSABLE as specified in ldap3
     :param auto_referrals: specify if the connection object must automatically follow referrals
     :type auto_referrals: bool
     :param sasl_mechanism: mechanism for SASL authentication, can be one of 'EXTERNAL', 'DIGEST-MD5', 'GSSAPI', 'PLAIN'

@@ -193,16 +193,26 @@ You can specify which Kerberos client principal should be used with the ``user``
 By default the library attempts to bind against the service principal for the domain you attempted to connect to.
 If your target LDAP service uses a round-robin DNS, it's likely that the hostname you connect to won't match. In this case,
 you can either specify a hostname explicitly as the first element of the ``sasl_credentials`` connection parameter,
-or pass ``True`` as the first element to do a reverse DNS lookup::
+or pass an appropriate value of the ``ReverseDnsSetting`` enum as the first element to do a reverse DNS lookup::
 
     # Override server hostname for authentication
     c = Connection(
         server, sasl_credentials=('ldap-3.example.com',),
         authentication=SASL, sasl_mechanism=KERBEROS)
 
-    # Perform a reverse DNS lookup to determine the hostname to authenticate against.
-    c = Connection(server, sasl_credentials=(True,), authentication=SASL, sasl_mechanism=KERBEROS)
-    
+    # Perform a reverse DNS lookup to determine the hostname to authenticate against regardless of server specification.
+    c = Connection(server, sasl_credentials=(ReverseDnsSetting.REQUIRE_RESOLVE_ALL_ADDRESSES,), authentication=SASL, sasl_mechanism=KERBEROS)
+
+    # Only perform a reverse DNS lookup to determine the hostname to authenticate against if the server's host is
+    # specified as an IP address
+    c = Connection(server, sasl_credentials=(ReverseDnsSetting.REQUIRE_RESOLVE_IP_ADDRESSES_ONLY,), authentication=SASL, sasl_mechanism=KERBEROS)
+
+    # Perform a reverse DNS lookup to determine the hostname to authenticate against, but if that lookup fails, proceed
+    # and attempt to use the server host as is.
+    # This is useful when working with serverpools where some servers are resolvable through reverse dns and need it,
+    # while other servers are not resolvable and do not need it.
+    c = Connection(server, sasl_credentials=(ReverseDnsSetting.OPTIONAL_RESOLVE_ALL_ADDRESSES,), authentication=SASL, sasl_mechanism=KERBEROS)
+
 
 .. note::
    `ldap3` does not currently support any SASL data security layers, only authentication.

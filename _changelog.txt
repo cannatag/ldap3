@@ -1,3 +1,8 @@
+# 2.9 - not yet released
+    - tested against Python 3.9
+    - added requirements-dev.txt
+
+
 # 2.8.1 - 2020.09.07
     - fixed regression in 2.8 for members returned in AD auto-range search (thanks Felix)
     - fixed regression in 2.8 for attribute error in restartable class (thanks Christian)

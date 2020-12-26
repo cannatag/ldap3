@@ -314,7 +314,7 @@ def validate_guid(input_value):
             return False
 
     if changed:
-        valid_values = [check_backslash(value) for value in valid_values]
+        # valid_values = [check_backslash(value) for value in valid_values]
         if sequence:
             return valid_values
         else:
@@ -358,7 +358,7 @@ def validate_uuid(input_value):
             return False
 
     if changed:
-        valid_values = [check_backslash(value) for value in valid_values]
+        # valid_values = [check_backslash(value) for value in valid_values]
         if sequence:
             return valid_values
         else:
@@ -419,7 +419,7 @@ def validate_uuid_le(input_value):
             return False
 
     if changed:
-        valid_values = [check_backslash(value) for value in valid_values]
+        # valid_values = [check_backslash(value) for value in valid_values]
         if sequence:
             return valid_values
         else:
@@ -492,7 +492,7 @@ def validate_sid(input_value):
                 changed = True
 
     if changed:
-        valid_values = [check_backslash(value) for value in valid_values]
+        # valid_values = [check_backslash(value) for value in valid_values]
         if sequence:
             return valid_values
         else:

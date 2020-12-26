@@ -9,7 +9,7 @@ in another container but you cannot perform both operations at the same time.
 
 To perform a ModifyDN operation you must specify the dn of the entry and the new relative dn requested.
 
-In the ldap3 library the signature for the Delete operation is::
+In the ldap3 library the signature for the ModifyDN operation is::
 
     def modify_dn(self,
                   dn,

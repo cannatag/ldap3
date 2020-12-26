@@ -49,9 +49,9 @@ the CA file or even pass certificate data "on the fly".
 
 When defining the Tls object you have the following additional parameters available:
 
-* ca_cert_file: the usual link to the certification authority chain of certificates
-* ca_cert_path: a link to a path containing the certification  authorities certificates (reashed, as expected by OpenSSL)
-* ca_cert_data: CA certificate data stored in memory
+* ca_certs_file: the usual link to the certification authority chain of certificates
+* ca_certs_path: a link to a path containing the certification  authorities certificates (reashed, as expected by OpenSSL)
+* ca_certs_data: CA certificate data stored in memory
 
 if you leave all these parameter to None the SSLContext will use the
 system wide certificate store (ssl path on linux, CA stores on

@@ -34,7 +34,7 @@ from struct import pack
 from platform import system
 from random import choice
 
-from .. import SYNC, ANONYMOUS, get_config_parameter, BASE, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES
+from .. import SYNC, ANONYMOUS, get_config_parameter, BASE, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES, DIGEST_MD5
 from ..core.results import DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, LDAPStartTLSError, \
@@ -62,6 +62,7 @@ from ..protocol.microsoft import DirSyncControlResponseValue
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
 from ..utils.asn1 import encode, decoder, ldap_result_to_dict_fast, decode_sequence
 from ..utils.conv import to_unicode
+from ..protocol.sasl.digestMd5 import md5_h, md5_hmac
 
 SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'
 TRANSACTION_ERROR = 'TRANSACTION_ERROR'
@@ -868,6 +869,16 @@ class BaseStrategy(object):
             log(NETWORK, 'sending 1 ldap message for <%s>', self.connection)
         try:
             encoded_message = encode(ldap_message)
+            if self.connection.sasl_mechanism == DIGEST_MD5 and self.connection._digestMD5_Kic and not self.connection.sasl_in_progress:
+                # If we are using DIGEST-MD5 and LDAP signing is enabled: add a signature to the message
+                secnum = self.connection._digestMD5_secnum
+                Kic = self.connection._digestMD5_Kic
+
+                # RFC 2831 : encoded_message = sizeOf(encored_message + signature + 0x0001 + secNum) + encoded_message + signature + 0x0001 + secNum
+                signature = bytes.fromhex(md5_hmac(Kic, int(secnum).to_bytes(4, 'big') + encoded_message)[0:20])
+                encoded_message = int(len(encoded_message) + 4 + 2 + 10).to_bytes(4, 'big') + encoded_message + signature + int(1).to_bytes(2, 'big') + int(secnum).to_bytes(4, 'big')
+                self.connection._digestMD5_secnum += 1
+
             self.connection.socket.sendall(encoded_message)
             if log_enabled(EXTENDED):
                 log(EXTENDED, 'ldap message sent via <%s>:%s', self.connection, format_ldap_message(ldap_message, '>>'))

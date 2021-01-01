@@ -284,6 +284,9 @@ class Connection(object):
             self.use_referral_cache = use_referral_cache
             self.auto_escape = auto_escape
             self.auto_encode = auto_encode
+            self._digestMD5_Kic = None
+            self._digestMD5_Kis = None
+            self._digestMD5_secnum = 0
 
             port_err = check_port_and_port_list(source_port, source_port_list)
             if port_err:

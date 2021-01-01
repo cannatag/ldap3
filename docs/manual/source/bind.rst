@@ -154,18 +154,28 @@ server trust the credential provided when establishing the secure channel::
 Digest-MD5
 ^^^^^^^^^^
 
-To use the DIGEST-MD5 mechanism you must pass a 4-value tuple as sasl_credentials: (realm, user, password, authz_id). You can pass None
-for 'realm' and 'authz_id' if not used. Quality of Protection is always 'auth'::
+To use the DIGEST-MD5 mechanism you must pass a 4-value or 5-value tuple as sasl_credentials: (realm, user, password, authz_id, enable_signing). You can pass None
+for 'realm', 'authz_id' and 'enable_signing' if not used::
 
     from ldap3 import Server, Connection, SASL, DIGEST_MD5
     server = Server(host = test_server, port = test_port)
     c = Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = SASL,
-                             sasl_mechanism = DIGEST_MD5, sasl_credentials = (None, 'username', 'password', None))
+                             sasl_mechanism = DIGEST_MD5, sasl_credentials = (None, 'username', 'password', None, 'sign'))
 
 Username is not required to be an LDAP entry, but it can be any identifier recognized by the server (i.e. email, principal, ...). If
 you pass None as 'realm' the default realm of the LDAP server will be used.
 
-**Again, remember that DIGEST-MD5 is deprecated and should not be used.**
+``enable_signing`` is an optional argument, which is only relevant for Digest-MD5 authentication. This argument enable or disable signing
+(Integrity protection) when performing LDAP queries.
+LDAP signing is a way to prevent replay attacks without encrypting the LDAP traffic. Microsoft publicly recommend to enforce LDAP signing when talking to
+an Active Directory server : https://support.microsoft.com/en-us/help/4520412/2020-ldap-channel-binding-and-ldap-signing-requirements-for-windows
+
+* When ``enable_signing`` is set to 'sign', LDAP requests are signed and signature of LDAP responses is verified.
+* When ``enable_signing`` is set to any other value or not set, LDAP requests are not signed.
+
+Also, DIGEST-MD5 authentication with encryption in addition to the integrity protection (``qop=auth-conf``) is not yet supported by ldap3.
+
+**Using DIGEST-MD5 without LDAP signing is considered deprecated and should not be used.**
 
 
 .. _sasl-kerberos:

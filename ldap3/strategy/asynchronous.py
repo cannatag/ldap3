@@ -26,13 +26,13 @@
 from threading import Thread, Lock, Event
 import socket
 
-from .. import get_config_parameter
+from .. import get_config_parameter, DIGEST_MD5
 from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult
 from ..strategy.base import BaseStrategy, RESPONSE_COMPLETE
 from ..protocol.rfc4511 import LDAPMessage
 from ..utils.log import log, log_enabled, format_ldap_message, ERROR, NETWORK, EXTENDED
 from ..utils.asn1 import decoder, decode_message_fast
-
+from ..protocol.sasl.digestMd5 import md5_h, md5_hmac
 
 # noinspection PyProtectedMember
 class AsyncStrategy(BaseStrategy):
@@ -66,6 +66,12 @@ class AsyncStrategy(BaseStrategy):
             get_more_data = True
             listen = True
             data = b''
+            sasl_total_bytes_recieved = 0
+            sasl_recieved_data = b'' # used to verify the signature
+            sasl_next_packet = b''
+            sasl_signature = b''
+            sasl_secNum = b'' # used to verify the signature
+
             while listen:
                 if get_more_data:
                     try:
@@ -78,7 +84,38 @@ class AsyncStrategy(BaseStrategy):
                             log(ERROR, '<%s> for <%s>', str(e), self.connection)
                         raise  # unexpected exception - re-raise
                     if len(data) > 0:
-                        unprocessed += data
+                        # If we are using DIGEST-MD5 and LDAP signing is set : verify & remove the signature from the message
+                        if self.connection.sasl_mechanism == DIGEST_MD5 and self.connection._digestMD5_Kis and not self.connection.sasl_in_progress:
+                            data = sasl_next_packet + data
+
+                            if sasl_recieved_data == b'' or sasl_next_packet:
+                                # Remove the sizeOf(encoded_message + signature + 0x0001 + secNum) from data.
+                                sasl_buffer_length = int.from_bytes(data[0:4], "big")
+                                data = data[4:]
+                            sasl_next_packet = b''
+                            sasl_total_bytes_recieved += len(data)
+                            sasl_recieved_data += data
+
+                            if sasl_total_bytes_recieved >= sasl_buffer_length:
+                                # When the LDAP response is splitted accross multiple TCP packets, the SASL buffer length is equal to the MTU of each packet..Which is usually not equal to self.socket_size
+                                # This means that the end of one SASL packet/beginning of one other....could be located in the middle of data
+                                # We are using "sasl_recieved_data" instead of "data" & "unprocessed" for this reason
+
+                                # structure of messages when LDAP signing is enabled : sizeOf(encoded_message + signature + 0x0001 + secNum) + encoded_message + signature + 0x0001 + secNum
+                                sasl_signature = sasl_recieved_data[sasl_buffer_length - 16:sasl_buffer_length - 6]
+                                sasl_secNum = sasl_recieved_data[sasl_buffer_length - 4:sasl_buffer_length]
+                                sasl_next_packet = sasl_recieved_data[sasl_buffer_length:] # the last "data" variable may contain another sasl packet. We'll process it at the next iteration.
+                                sasl_recieved_data = sasl_recieved_data[:sasl_buffer_length - 16] # remove signature + 0x0001 + secNum + the next packet if any, from sasl_recieved_data
+
+                                Kis = self.connection._digestMD5_Kis
+                                calculated_signature = bytes.fromhex(md5_hmac(Kis, sasl_secNum + sasl_recieved_data)[0:20])
+                                if sasl_signature != calculated_signature:
+                                    raise LDAPSignatureVerificationFailedError("Signature verification failed for the recieved LDAP message number " + str(int.from_bytes(sasl_secNum, 'big')) + ". Expected signature " + calculated_signature.hex() + " but got " + sasl_signature.hex() + ".")
+                                sasl_total_bytes_recieved = 0
+                                unprocessed += sasl_recieved_data
+                                sasl_recieved_data = b''
+                        else:
+                            unprocessed += data
                         data = b''
                     else:
                         listen = False

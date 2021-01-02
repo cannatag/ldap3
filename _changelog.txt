@@ -3,7 +3,7 @@
     - added requirements-dev.txt
     - added more granular control over use of reverse dns with Kerberos (thanks Azaria)
     - support MS Active Directory persistent search (thanks eLeX)
-    - added support for LDAP signing when using DIGEST-MD5 authentication
+    - added support for LDAP signing when using DIGEST-MD5 authentication (thanks Augustin-FL)
 
 
 # 2.8.1 - 2020.09.07

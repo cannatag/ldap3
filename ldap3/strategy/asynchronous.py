@@ -27,7 +27,7 @@ from threading import Thread, Lock, Event
 import socket
 
 from .. import get_config_parameter, DIGEST_MD5
-from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult
+from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult, LDAPSignatureVerificationFailedError
 from ..strategy.base import BaseStrategy, RESPONSE_COMPLETE
 from ..protocol.rfc4511 import LDAPMessage
 from ..utils.log import log, log_enabled, format_ldap_message, ERROR, NETWORK, EXTENDED

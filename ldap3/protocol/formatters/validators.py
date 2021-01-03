@@ -299,7 +299,7 @@ def validate_guid(input_value):
             except ValueError: # try if the value is an escaped ldap byte sequence
                 try:
                     x = ldap_escape_to_bytes(element)
-                    valid_values.append(UUID(bytes=x))
+                    valid_values.append(UUID(bytes=x).bytes)
                     changed = True
                     continue
                 except ValueError:

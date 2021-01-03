@@ -231,9 +231,6 @@ class Test(unittest.TestCase):
             if self.connection.check_names:
                 status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(guid=' + response[0]['attributes']['guid'] + ')', attributes=[test_name_attr, 'sn']), self.connection)
             else:
-                x = response[0]['raw_attributes']['guid'][0]
-                y = escape_bytes(x)
-                z = ldap_escape_to_bytes(y)
                 status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(guid=' + escape_bytes(response[0]['raw_attributes']['guid'][0]) + ')', attributes=[test_name_attr, 'sn']), self.connection)
         elif test_server_type == 'AD':  # not tested on AD yet
             status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(objectguid=' + response[0]['attributes']['objectguid'] + ')', attributes=[test_name_attr, 'sn']), self.connection)
@@ -256,4 +253,7 @@ class Test(unittest.TestCase):
         self.assertEqual(len(response), 1)
         if test_server_type == 'EDIR':
             self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'sea-17')
-            self.assertEqual(response[0]['attributes']['audio'][0], ldap_bytes)
+            if self.connection.check_names:
+                self.assertEqual(response[0]['attributes']['audio'][0], ldap_bytes)
+            else:
+                self.assertEqual(response[0]['raw_attributes']['audio'][0], ldap_bytes)

@@ -42,7 +42,7 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 from ldap3 import __version__ as ldap3_version
 from pyasn1 import __version__ as pyasn1_version
 
-test_strategy = getenv('STRATEGY', ASYNC)  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
+test_strategy = getenv('STRATEGY', SYNC)  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = getenv('SERVER', 'EDIR')  # possible choices: EDIR (NetIQ eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP, NONE (doesn't run test that require an external server)
 
 test_verbose = True if getenv('VERBOSE', 'TRUE').upper() == 'TRUE' else False
@@ -87,9 +87,7 @@ else:
 # test_server_type = 'AD'
 # test_internal_decoder = True
 
-# force testing with AD provided by Lucas Raab
-# location = 'ELITE10GC-AD-RAAB'
-test_check_names = False
+
 
 if 'TRAVIS' in location:
     # test in the cloud

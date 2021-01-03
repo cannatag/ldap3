@@ -4,6 +4,7 @@
     - added requirements-dev.txt
     - added more granular control over use of reverse dns with Kerberos (thanks Azaria)
     - support MS Active Directory persistent search (thanks eLeX)
+    - added support for LDAP signing when using DIGEST-MD5 authentication (thanks Augustin-FL)
     - check only for searchResEntries in LDIF conversion (thanks Jay)
     - modify-increment now works properly in mocy strategies (thanks Saint-Marcel)
     - objectGUID are now converted properly (thanks Janne)

@@ -25,10 +25,8 @@
 
 import socket
 
-from enum import Enum
 
-
-class ReverseDnsSetting(Enum):
+class ReverseDnsSetting(object):
     OFF = 0,
     REQUIRE_RESOLVE_ALL_ADDRESSES = 1,
     REQUIRE_RESOLVE_IP_ADDRESSES_ONLY = 2,

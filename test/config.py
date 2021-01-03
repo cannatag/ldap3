@@ -32,7 +32,7 @@ except ImportError:
 
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection,\
     ServerPool, SASL, STRING_TYPES, get_config_parameter, set_config_parameter, \
-    NONE, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC, NTLM, SAFE_SYNC, \
+    NONE, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC, NTLM, SAFE_SYNC, SAFE_RESTARTABLE, \
     AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS, SEQUENCE_TYPES, MODIFY_ADD
 from ldap3.protocol.schemas.edir914 import edir_9_1_4_schema, edir_9_1_4_dsa_info
 from ldap3.protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
@@ -42,8 +42,8 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 from ldap3 import __version__ as ldap3_version
 from pyasn1 import __version__ as pyasn1_version
 
-test_strategy = getenv('STRATEGY', SYNC)  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
-test_server_type = getenv('SERVER', 'EDIR')  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP, NONE (doesn't run test that require an external server)
+test_strategy = getenv('STRATEGY', ASYNC)  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
+test_server_type = getenv('SERVER', 'EDIR')  # possible choices: EDIR (NetIQ eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP, NONE (doesn't run test that require an external server)
 
 test_verbose = True if getenv('VERBOSE', 'TRUE').upper() == 'TRUE' else False
 test_pool_size = 5
@@ -89,6 +89,7 @@ else:
 
 # force testing with AD provided by Lucas Raab
 # location = 'ELITE10GC-AD-RAAB'
+test_check_names = False
 
 if 'TRAVIS' in location:
     # test in the cloud
@@ -745,33 +746,36 @@ def add_user(connection, batch_id, username, password=None, attributes=None, tes
     dn = generate_dn(test_base, batch_id, username)
     if test_server_type == 'EDIR':  # in eDirectory first create the user with the password and then modify the other attributes
         # operation_result = connection.add(dn, None, {attribute: attributes[attribute] for attribute in attributes if attribute in ['userPassword', 'objectClass', 'sn', 'givenname']})
-        operation_result = connection.add(dn, None, dict((attribute, attributes[attribute]) for attribute in attributes if attribute in ['userPassword', 'objectClass', 'sn', 'givenname']))
+        for tries in range(1, 3):
+            operation_result = connection.add(dn, None, dict((attribute, attributes[attribute]) for attribute in attributes if attribute in ['userPassword', 'objectClass', 'sn', 'givenname']))
+            result = get_operation_result(connection, operation_result)
+            if result['description'] == 'success':
+                break
+            # maybe the entry already exists, try to delete
+            operation_result = connection.delete(dn)
+            sleep(5)
+        else:
+
+            raise Exception('unable to create user ' + dn)
+
         changes = dict((attribute, [(MODIFY_ADD, attributes[attribute])]) for attribute in attributes if attribute not in ['userPassword', 'objectClass', 'sn', 'givenname'])
         if changes:
-            operation_result = connection.modify(dn, changes)
-    else:
-        operation_result = connection.add(dn, None, attributes)
-    result = get_operation_result(connection, operation_result)
-    if not result['description'] == 'success':
-        # maybe the entry already exists, try to delete
-        operation_result = connection.delete(dn)
-        sleep(5)
-        if test_server_type == 'EDIR':  # in eDirectory first create the user with the password and then modify the other attributes
-            operation_result = connection.add(dn, None, dict((attribute, attributes[attribute]) for attribute in attributes if
-                                                         attribute in ['userPassword', 'objectClass', 'sn',
-                                                                       'givenname']))
-            if test_strategy == 'REUSABLE':
-                sleep(5)  # wait for the previous operation to complete
-            changes = dict((attribute, [(MODIFY_ADD, attributes[attribute])]) for attribute in attributes if
-                       attribute not in ['userPassword', 'objectClass', 'sn', 'givenname'])
-            if changes:
+            for tries in range(1, 3):
                 operation_result = connection.modify(dn, changes)
-        else:
+                result = get_operation_result(connection, operation_result)
+                if result['description'] == 'success':
+                    break
+                print('retry...')
+                sleep(2)
+    else:
+        for tries in range(1, 3):
             operation_result = connection.add(dn, None, attributes)
-        result = get_operation_result(connection, operation_result)
-        if not result['description'] == 'success':
-            # print(attributes)
-            raise Exception('unable to create user ' + dn + ': ' + str(result))
+            result = get_operation_result(connection, operation_result)
+            if result['description'] == 'success':
+                break
+            # maybe the entry already exists, try to delete
+            operation_result = connection.delete(dn)
+            sleep(5)
 
     return dn, result
 

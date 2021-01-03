@@ -98,7 +98,7 @@ def sasl_digest_md5(connection, controls):
     qop = b'auth'
     if len(connection.sasl_credentials) == 5 and connection.sasl_credentials[4] == 'sign' and not connection.server.ssl:
         qop = b'auth-int'
-        connection._digestMD5_secnum = 0
+        connection._digest_md5_sec_num = 0
 
     digest_response = b'username="' + user + b'",'
     digest_response += b'realm="' + realm + b'",'
@@ -116,8 +116,8 @@ def sasl_digest_md5(connection, controls):
     a2 = b'AUTHENTICATE:' + uri + (b':00000000000000000000000000000000' if qop in [b'auth-int', b'auth-conf'] else b'')
 
     if qop == b'auth-int':
-        connection._digestMD5_Kis = md5_h(md5_h(a1) + b"Digest session key to server-to-client signing key magic constant")
-        connection._digestMD5_Kic = md5_h(md5_h(a1) + b"Digest session key to client-to-server signing key magic constant")
+        connection._digest_md5_kis = md5_h(md5_h(a1) + b"Digest session key to server-to-client signing key magic constant")
+        connection._digest_md5_kic = md5_h(md5_h(a1) + b"Digest session key to client-to-server signing key magic constant")
 
     digest_response += b'response="' + md5_hex(md5_kd(md5_hex(md5_h(a1)), b':'.join([nonce, b'00000001', cnonce, qop, md5_hex(md5_h(a2))]))) + b'"'
 

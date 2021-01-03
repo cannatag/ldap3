@@ -296,9 +296,10 @@ def validate_guid(input_value):
             try:
                 valid_values.append(UUID(element).bytes)
                 changed = True
-            except ValueError: # try if the value is an escaped byte sequence
+            except ValueError: # try if the value is an escaped ldap byte sequence
                 try:
-                    valid_values.append(UUID(element.replace('\\', '')).bytes)
+                    x = ldap_escape_to_bytes(element)
+                    valid_values.append(UUID(bytes=x))
                     changed = True
                     continue
                 except ValueError:

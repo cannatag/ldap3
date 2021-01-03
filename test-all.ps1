@@ -1,5 +1,5 @@
-$PythonVersions = @('3.8', '2.7')
-$Strategies = @('SYNC', 'ASYNC', 'SAFE_SYNC', 'RESTARTABLE')
+$PythonVersions = @('3.9', '2.7')
+$Strategies = @('SYNC', 'ASYNC', 'SAFE_SYNC', 'RESTARTABLE', 'SAFE_RESTARTABLE')
 $Servers = @('EDIR')
 $Decoders = @('INTERNAL', 'EXTERNAL')
 $Booleans = @('TRUE', 'FALSE')
@@ -33,7 +33,7 @@ function RunTestSuite
         # Start-Process py -2.7 -m unittest discover -s test -c -q
         py -2.7 -m unittest discover -s test -c
     }
-    elseif ($Python -eq "3.8") {
+    elseif ($Python -eq "3.9") {
         # Start-Process .\venv\Scripts\python -m unittest discover -s test -c -q
         .\venv\Scripts\python -m unittest discover -s test -c
     }
@@ -56,9 +56,9 @@ function RunAllSuites
             {
                 foreach ($Lazy in $Booleans)
                 {
-                    foreach ($Logging in $OnlyFalse)
+                    foreach ($Logging in $Booleans)
                     {
-                        foreach ($CheckName in $OnlyTrue)
+                        foreach ($CheckName in $Booleans)
                         {
                             foreach ($Decoder in $Decoders)
                             {

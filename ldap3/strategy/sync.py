@@ -31,7 +31,7 @@ from ..strategy.base import BaseStrategy, SESSION_TERMINATED_BY_SERVER, RESPONSE
 from ..protocol.rfc4511 import LDAPMessage
 from ..utils.log import log, log_enabled, ERROR, NETWORK, EXTENDED, format_ldap_message
 from ..utils.asn1 import decoder, decode_message_fast
-from ..protocol.sasl.digestMd5 import md5_h, md5_hmac
+from ..protocol.sasl.digestMd5 import md5_hmac
 
 LDAP_MESSAGE_TEMPLATE = LDAPMessage()
 
@@ -76,12 +76,13 @@ class SyncStrategy(BaseStrategy):
         unprocessed = b''
         data = b''
         get_more_data = True
-        exc = None
+        # exc = None  # not needed here GC
         sasl_total_bytes_recieved = 0
-        sasl_recieved_data = b'' # used to verify the signature
+        sasl_received_data = b''  # used to verify the signature
         sasl_next_packet = b''
-        sasl_signature = b''
-        sasl_secNum = b'' # used to verify the signature
+        # sasl_signature = b'' # not needed here? GC
+        # sasl_sec_num = b'' # used to verify the signature  # not needed here, reformatted to lowercase GC
+        sasl_buffer_length = -1  # added, not initialized? GC
         while receiving:
             if get_more_data:
                 try:
@@ -98,35 +99,35 @@ class SyncStrategy(BaseStrategy):
                     raise communication_exception_factory(LDAPSocketReceiveError, type(e)(str(e)))(self.connection.last_error)
 
                 # If we are using DIGEST-MD5 and LDAP signing is set : verify & remove the signature from the message
-                if self.connection.sasl_mechanism == DIGEST_MD5 and self.connection._digestMD5_Kis and not self.connection.sasl_in_progress:
+                if self.connection.sasl_mechanism == DIGEST_MD5 and self.connection._digest_md5_kis and not self.connection.sasl_in_progress:
                     data = sasl_next_packet + data
 
-                    if sasl_recieved_data == b'' or sasl_next_packet:
+                    if sasl_received_data == b'' or sasl_next_packet:
                         # Remove the sizeOf(encoded_message + signature + 0x0001 + secNum) from data.
                         sasl_buffer_length = int.from_bytes(data[0:4], "big")
                         data = data[4:]
                     sasl_next_packet = b''
                     sasl_total_bytes_recieved += len(data)
-                    sasl_recieved_data += data
+                    sasl_received_data += data
 
                     if sasl_total_bytes_recieved >= sasl_buffer_length:
                         # When the LDAP response is splitted accross multiple TCP packets, the SASL buffer length is equal to the MTU of each packet..Which is usually not equal to self.socket_size
                         # This means that the end of one SASL packet/beginning of one other....could be located in the middle of data
-                        # We are using "sasl_recieved_data" instead of "data" & "unprocessed" for this reason
+                        # We are using "sasl_received_data" instead of "data" & "unprocessed" for this reason
 
                         # structure of messages when LDAP signing is enabled : sizeOf(encoded_message + signature + 0x0001 + secNum) + encoded_message + signature + 0x0001 + secNum
-                        sasl_signature = sasl_recieved_data[sasl_buffer_length - 16:sasl_buffer_length - 6]
-                        sasl_secNum = sasl_recieved_data[sasl_buffer_length - 4:sasl_buffer_length]
-                        sasl_next_packet = sasl_recieved_data[sasl_buffer_length:] # the last "data" variable may contain another sasl packet. We'll process it at the next iteration.
-                        sasl_recieved_data = sasl_recieved_data[:sasl_buffer_length - 16] # remove signature + 0x0001 + secNum + the next packet if any, from sasl_recieved_data
+                        sasl_signature = sasl_received_data[sasl_buffer_length - 16:sasl_buffer_length - 6]
+                        sasl_sec_num = sasl_received_data[sasl_buffer_length - 4:sasl_buffer_length]
+                        sasl_next_packet = sasl_received_data[sasl_buffer_length:]  # the last "data" variable may contain another sasl packet. We'll process it at the next iteration.
+                        sasl_received_data = sasl_received_data[:sasl_buffer_length - 16]  # remove signature + 0x0001 + secNum + the next packet if any, from sasl_received_data
 
-                        Kis = self.connection._digestMD5_Kis
-                        calculated_signature = bytes.fromhex(md5_hmac(Kis, sasl_secNum + sasl_recieved_data)[0:20])
+                        kis = self.connection._digest_md5_kis  # renamed to lowercase GC
+                        calculated_signature = bytes.fromhex(md5_hmac(kis, sasl_sec_num + sasl_received_data)[0:20])
                         if sasl_signature != calculated_signature:
-                            raise LDAPSignatureVerificationFailedError("Signature verification failed for the recieved LDAP message number " + str(int.from_bytes(sasl_secNum, 'big')) + ". Expected signature " + calculated_signature.hex() + " but got " + sasl_signature.hex() + ".")
+                            raise LDAPSignatureVerificationFailedError("Signature verification failed for the recieved LDAP message number " + str(int.from_bytes(sasl_sec_num, 'big')) + ". Expected signature " + calculated_signature.hex() + " but got " + sasl_signature.hex() + ".")
                         sasl_total_bytes_recieved = 0
-                        unprocessed += sasl_recieved_data
-                        sasl_recieved_data = b''
+                        unprocessed += sasl_received_data
+                        sasl_received_data = b''
                 else:
                     unprocessed += data
             if len(data) > 0:

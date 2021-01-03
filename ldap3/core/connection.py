@@ -24,13 +24,13 @@
 # If not, see <http://www.gnu.org/licenses/>.
 from copy import deepcopy, copy
 from os import linesep
-from threading import RLock, Lock
+from threading import RLock
 from functools import reduce
 import json
 
 from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, get_config_parameter, DEREF_ALWAYS, \
     SUBTREE, ASYNC, SYNC, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, ASYNC_STREAM, \
-    RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, SAFE_SYNC, \
+    RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, SAFE_SYNC, SAFE_RESTARTABLE, \
     AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL,\
     DIGEST_MD5, GSSAPI, PLAIN, DSA, SCHEMA, ALL
 
@@ -53,6 +53,7 @@ from ..protocol.sasl.external import sasl_external
 from ..protocol.sasl.plain import sasl_plain
 from ..strategy.sync import SyncStrategy
 from ..strategy.safeSync import SafeSyncStrategy
+from ..strategy.safeRestartable import SafeRestartableStrategy
 from ..strategy.mockAsync import MockAsyncStrategy
 from ..strategy.asynchronous import AsyncStrategy
 from ..strategy.reusable import ReusableStrategy
@@ -81,6 +82,7 @@ SASL_AVAILABLE_MECHANISMS = [EXTERNAL,
 
 CLIENT_STRATEGIES = [SYNC,
                      SAFE_SYNC,
+                     SAFE_RESTARTABLE,
                      ASYNC,
                      LDIF,
                      RESTARTABLE,
@@ -284,9 +286,9 @@ class Connection(object):
             self.use_referral_cache = use_referral_cache
             self.auto_escape = auto_escape
             self.auto_encode = auto_encode
-            self._digestMD5_Kic = None
-            self._digestMD5_Kis = None
-            self._digestMD5_secnum = 0
+            self._digest_md5_kic = None
+            self._digest_md5_kis = None
+            self._digest_md5_sec_num = 0
 
             port_err = check_port_and_port_list(source_port, source_port_list)
             if port_err:
@@ -327,6 +329,8 @@ class Connection(object):
                 self.strategy = SyncStrategy(self)
             elif self.strategy_type == SAFE_SYNC:
                 self.strategy = SafeSyncStrategy(self)
+            elif self.strategy_type == SAFE_RESTARTABLE:
+                self.strategy = SafeRestartableStrategy(self)
             elif self.strategy_type == ASYNC:
                 self.strategy = AsyncStrategy(self)
             elif self.strategy_type == LDIF:
@@ -1353,7 +1357,6 @@ class Connection(object):
             log(BASIC, 'start NTLM BIND operation via <%s>', self)
         self.last_error = None
         with self.connection_lock:
-            result = None
             if not self.sasl_in_progress:
                 self.sasl_in_progress = True  # ntlm is same of sasl authentication
                 try:

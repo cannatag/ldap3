@@ -350,7 +350,7 @@ class BaseStrategy(object):
             timeout = get_config_parameter('RESPONSE_WAITING_TIMEOUT')
         response = None
         result = None
-        request = None
+        # request = None
         if self._outstanding and message_id in self._outstanding:
             responses = self._get_response(message_id, timeout)
 
@@ -596,9 +596,9 @@ class BaseStrategy(object):
             control_value = dict()
             control_value['result'] = attributes_to_dict(control_resp['attributes'])
         if unprocessed:
-                if log_enabled(ERROR):
-                    log(ERROR, 'unprocessed control response in substrate')
-                raise LDAPControlError('unprocessed control response in substrate')
+            if log_enabled(ERROR):
+                log(ERROR, 'unprocessed control response in substrate')
+            raise LDAPControlError('unprocessed control response in substrate')
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 
     @staticmethod
@@ -717,7 +717,6 @@ class BaseStrategy(object):
                         del current_response['attributes'][requested_range]
                     attr_name = list(filter(lambda a: ';range=' in a, current_response['raw_attributes'].keys()))[0]
                     continue
-
             done = True
 
     def do_search_on_auto_range(self, request, response):
@@ -869,15 +868,15 @@ class BaseStrategy(object):
             log(NETWORK, 'sending 1 ldap message for <%s>', self.connection)
         try:
             encoded_message = encode(ldap_message)
-            if self.connection.sasl_mechanism == DIGEST_MD5 and self.connection._digestMD5_Kic and not self.connection.sasl_in_progress:
+            if self.connection.sasl_mechanism == DIGEST_MD5 and self.connection._digest_md5_kic and not self.connection.sasl_in_progress:
                 # If we are using DIGEST-MD5 and LDAP signing is enabled: add a signature to the message
-                secnum = self.connection._digestMD5_secnum
-                Kic = self.connection._digestMD5_Kic
+                sec_num = self.connection._digest_md5_sec_num  # added underscore GC
+                kic = self.connection._digest_md5_kic  # lowercase GC
 
                 # RFC 2831 : encoded_message = sizeOf(encored_message + signature + 0x0001 + secNum) + encoded_message + signature + 0x0001 + secNum
-                signature = bytes.fromhex(md5_hmac(Kic, int(secnum).to_bytes(4, 'big') + encoded_message)[0:20])
-                encoded_message = int(len(encoded_message) + 4 + 2 + 10).to_bytes(4, 'big') + encoded_message + signature + int(1).to_bytes(2, 'big') + int(secnum).to_bytes(4, 'big')
-                self.connection._digestMD5_secnum += 1
+                signature = bytes.fromhex(md5_hmac(kic, int(sec_num).to_bytes(4, 'big') + encoded_message)[0:20])
+                encoded_message = int(len(encoded_message) + 4 + 2 + 10).to_bytes(4, 'big') + encoded_message + signature + int(1).to_bytes(2, 'big') + int(sec_num).to_bytes(4, 'big')
+                self.connection._digest_md5_sec_num += 1
 
             self.connection.socket.sendall(encoded_message)
             if log_enabled(EXTENDED):

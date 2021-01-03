@@ -34,11 +34,11 @@ class Test(unittest.TestCase):
         fail_msg = ('Changing the mapping of reverse dns enum types to numeric values will break backwards '
                     'compatibility for existing clients on older versions of the ldap3 package. If new enum types '
                     'are added or functionally changed, please use new values')
-        assert ReverseDnsSetting.OFF.value == (0,), fail_msg
-        assert ReverseDnsSetting.REQUIRE_RESOLVE_ALL_ADDRESSES.value == (1,), fail_msg
-        assert ReverseDnsSetting.REQUIRE_RESOLVE_IP_ADDRESSES_ONLY.value == (2,), fail_msg
-        assert ReverseDnsSetting.OPTIONAL_RESOLVE_ALL_ADDRESSES.value == (3,), fail_msg
-        assert ReverseDnsSetting.OPTIONAL_RESOLVE_IP_ADDRESSES_ONLY.value == (4,), fail_msg
+        assert ReverseDnsSetting.OFF == (0,), fail_msg
+        assert ReverseDnsSetting.REQUIRE_RESOLVE_ALL_ADDRESSES == (1,), fail_msg
+        assert ReverseDnsSetting.REQUIRE_RESOLVE_IP_ADDRESSES_ONLY == (2,), fail_msg
+        assert ReverseDnsSetting.OPTIONAL_RESOLVE_ALL_ADDRESSES == (3,), fail_msg
+        assert ReverseDnsSetting.OPTIONAL_RESOLVE_IP_ADDRESSES_ONLY == (4,), fail_msg
 
     def test_ipv4_ip_addr_checking(self):
         valid = is_ip_addr('10.254.76.5')

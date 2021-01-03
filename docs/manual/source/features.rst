@@ -69,7 +69,7 @@ ldap3 Features
 
     * MOCK_SYNC and MOCK_ASYNC strategies to emulate an LDAP server without connecting to a real server. Useful for testing your application
 
-    * SAFE_SYNC: tread safe synchronous strategy (for multi threads programming)
+    * SAFE_SYNC, SAFE_RESTARTABLE: thread safe synchronous strategies (for multi threads programming)
 
 6. Abstraction Layer:
 

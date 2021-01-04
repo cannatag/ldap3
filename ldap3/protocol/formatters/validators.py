@@ -412,7 +412,7 @@ def validate_uuid_le(input_value):
                     changed = True
                 except ValueError:
                     error = True
-            if error and str == bytes:  # python2 only assume value is bytes and valid
+            if error and (str is bytes):  # python2 only assume value is bytes and valid
                 valid_values.append(element)  # value is untouched, must be in little endian
         elif isinstance(element, (bytes, bytearray)):  # assumes bytes are valid uuid
             valid_values.append(element)  # value is untouched, must be in little endian

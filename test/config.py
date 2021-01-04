@@ -66,6 +66,11 @@ test_auto_encode = True
 test_lazy_connection = True if getenv('LAZY', 'FALSE').upper() == 'TRUE' else False
 test_user_password = 'Rc2597pfop'  # default password for users created in tests
 
+# overrides
+# test_logging = True
+# test_lazy_connection = True
+# test_check_names = False
+
 test_validator = {}
 try:
     location = environ['USERDOMAIN']

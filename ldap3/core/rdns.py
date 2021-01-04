@@ -53,8 +53,13 @@ def is_ip_addr(addr):
     """Returns True if an address is an ipv4 address or an ipv6 address based on format. False otherwise."""
     for addr_type in [socket.AF_INET, socket.AF_INET6]:
         try:
-            socket.inet_pton(addr_type, addr)
+            socket.inet_pton(addr_type, addr)  # not present on python 2.7 on Windows
             return True
+        except AttributeError:   # not present on Windows, always valid
+            if '.' in addr and any([c.isalpha() for c in addr.replace('.', '')]):  # not an IPv4 address, probably an hostname
+                return False
+            else:  # do not check for ipv6
+                return True
         except OSError:
             pass
 

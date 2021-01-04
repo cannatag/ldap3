@@ -1,4 +1,4 @@
-$PythonVersions = @('3.9', '2.7')
+$PythonVersions = @('2.7', '3.9')
 $Strategies = @('SYNC', 'ASYNC', 'SAFE_SYNC', 'RESTARTABLE', 'SAFE_RESTARTABLE')
 $Servers = @('EDIR')
 $Decoders = @('INTERNAL', 'EXTERNAL')

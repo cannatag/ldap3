@@ -107,7 +107,10 @@ def log(detail, message, *args):
             encoded_message = (get_detail_level_name(detail) + ':' + message % args).encode(_logging_encoding, 'backslashreplace')
             encoded_message = encoded_message.decode()
         else:
-            encoded_message = (get_detail_level_name(detail) + ':' + message % args).decode(_logging_encoding, 'replace')
+            try:
+                encoded_message = (get_detail_level_name(detail) + ':' + message % args).encode(_logging_encoding, 'replace')
+            except Exception:
+                encoded_message = (get_detail_level_name(detail) + ':' + message % args).decode(_logging_encoding, 'replace')
 
         if len(encoded_message) > _max_line_length:
             logger.log(_logging_level, encoded_message[:_max_line_length] + ' <removed %d remaining bytes in this log line>' % (len(encoded_message) - _max_line_length, ))

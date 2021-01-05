@@ -84,6 +84,9 @@ class Test(unittest.TestCase):
             r.search()
             self.assertTrue(r[0].cn, testcase_id + 'new-3')
             self.assertTrue(r[0].homeState, testcase_id + 'state-test-3')
+            w1 = Writer.from_cursor(r)
+            w1[0].entry_delete()
+            w1.commit()
 
     def test_read_entry_with_attribute_from_missing_auxiliary_class(self):
         if test_server_type != 'AD':
@@ -102,3 +105,6 @@ class Test(unittest.TestCase):
             self.assertTrue(r[0].cn, testcase_id + 'new-4')
             with self.assertRaises(LDAPCursorError):
                 self.assertTrue(r[0].homeState, testcase_id + 'state-test-3')
+            w1 = Writer.from_cursor(r)
+            w1[0].entry_delete()
+            w1.commit()

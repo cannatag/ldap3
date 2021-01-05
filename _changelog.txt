@@ -2,11 +2,12 @@
     - new feature: SafeRestartable strategy (SAFE_RESTARTABLE) for using a restartable Connection object in a multi-threading program
     - tested against Python 3.9
     - added requirements-dev.txt
+    - fixed logging unicode exceptions in python2.7
     - added more granular control over use of reverse dns with Kerberos (thanks Azaria)
     - support MS Active Directory persistent search (thanks eLeX)
     - added support for LDAP signing when using DIGEST-MD5 authentication (thanks Augustin-FL)
     - check only for searchResEntries in LDIF conversion (thanks Jay)
-    - modify-increment now works properly in mocy strategies (thanks Saint-Marcel)
+    - modify-increment now works properly in mock strategies (thanks Saint-Marcel)
     - objectGUID are now converted properly (thanks Janne)
 
 # 2.8.1 - 2020.09.07

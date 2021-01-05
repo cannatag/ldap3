@@ -25,6 +25,7 @@
 
 import unittest
 from copy import deepcopy
+from time import sleep
 
 from test.config import get_connection, drop_connection, add_user, random_id, get_add_user_attributes,\
     test_user_password, generate_dn, test_base
@@ -58,6 +59,7 @@ class Test(unittest.TestCase):
         copy_of_attributes = deepcopy(attributes)
         dn = generate_dn(test_base, testcase_id, 'add-operation-3')
         self.connection.add(dn, object_class, attributes)
+        sleep(2)
         self.connection.delete(dn)
         self.assertDictEqual(copy_of_attributes, attributes)
 

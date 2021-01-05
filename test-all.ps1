@@ -30,11 +30,11 @@ function RunTestSuite
     $env:DECODER=$Decoder
     
     if ($Python -eq "2.7") {
-        # Start-Process py -2.7 -m unittest discover -s test -c -q
+        # Start-Process py -2.7 -m unittest discover -s test -c
         py -2.7 -m unittest discover -s test -c
     }
     elseif ($Python -eq "3.9") {
-        # Start-Process .\venv\Scripts\python -m unittest discover -s test -c -q
+        # Start-Process .\venv\Scripts\python -m unittest discover -s test -c
         .\venv\Scripts\python -m unittest discover -s test -c
     }
     else {

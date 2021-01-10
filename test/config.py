@@ -417,6 +417,42 @@ elif location == 'W10GC9227-AD':
     test_ntlm_password = 'Rc99pfop'
     test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['10.160.201.232']
+elif location == 'AZURE-AD2019':
+    test_server = 'win2019lab.westeurope.cloudapp.azure.com'
+    test_server_type = 'AD'
+    test_domain_name = 'TESTAD-2019.LAB'  # Active Directory Domain name
+    test_root_partition = 'DC=' + ',DC='.join(test_domain_name.split('.'))  # partition to use in DirSync
+    # users need permission to create/delete users and groups and such within this base
+    test_base = 'ou=test,' + test_root_partition  # base context where test objects are created
+    test_moved = 'ou=moved,OU=test,' + test_root_partition  # base context where objects are moved in ModifyDN operations
+    test_name_attr = 'cn'  # naming attribute for test objects
+    test_int_attr = 'logonCount'
+    test_multivalued_attribute = 'carLicense'
+    test_singlevalued_attribute = 'street'
+    test_server_context = ''  # used in novell eDirectory extended operations
+    test_server_edir_name = ''  # used in novell eDirectory extended operations
+    test_user = 'CN=testLab,CN=Users,' + test_root_partition  # the user that performs the tests
+    test_password = 'Rc999pfop'  # user password
+    test_secondary_user = 'CN=testLab2,CN=Users,' + test_root_partition
+    test_secondary_password = 'Rc666pfop'  # user password
+    # test_sasl_user = 'testLAB@' + test_domain_name
+    test_sasl_user = test_domain_name.split('.')[0] + '\\testLab'
+    test_sasl_password = 'Rc999pfop'
+    test_sasl_user_dn = 'cn=testLAB,o=resources'
+    test_sasl_secondary_user = 'CN=testLab2,CN=Users,' + test_root_partition
+    test_sasl_secondary_password = 'Rc666pfop'
+    test_sasl_secondary_user_dn = 'CN=testLAB2,CN=Users,' + test_root_partition
+    test_sasl_realm = None
+    test_ca_cert_file = ''  # CA cert is in the AD domain if we ever want to start testing with it
+    test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
+    test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
+    test_ntlm_user = test_domain_name.split('.')[0] + '\\testLab'
+    test_ntlm_password = test_password
+    test_logging_filename = path.join(gettempdir(), 'ldap3.log')
+    # add 'WIN2019.' + test_domain_name if we ever make tests use the AD domain for dns. otherwise, only the
+    # azure.com domain name will be resolvable.
+    # no IP addresses are in the SANs for this certificate because it's on Azure
+    test_valid_names = ['win2019lab.westeurope.cloudapp.azure.com']
 elif location.endswith('-NONE'):
     test_server = None
     test_root_partition = None
@@ -776,6 +812,8 @@ def add_user(connection, batch_id, username, password=None, attributes=None, tes
             result = get_operation_result(connection, operation_result)
             if result['description'] == 'success':
                 break
+            print('Adding user at DN {} failed. Will attempt to delete entry if it already exists. '
+                  'Result of operation: {}'.format(dn, result))
             # maybe the entry already exists, try to delete
             operation_result = connection.delete(dn)
             sleep(5)

@@ -24,13 +24,13 @@
 # If not, see <http://www.gnu.org/licenses/>.
 from copy import deepcopy, copy
 from os import linesep
-from threading import RLock, Lock
+from threading import RLock
 from functools import reduce
 import json
 
 from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, get_config_parameter, DEREF_ALWAYS, \
     SUBTREE, ASYNC, SYNC, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, ASYNC_STREAM, \
-    RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, SAFE_SYNC, \
+    RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, SAFE_SYNC, SAFE_RESTARTABLE, \
     AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL,\
     DIGEST_MD5, GSSAPI, PLAIN, DSA, SCHEMA, ALL
 
@@ -53,6 +53,7 @@ from ..protocol.sasl.external import sasl_external
 from ..protocol.sasl.plain import sasl_plain
 from ..strategy.sync import SyncStrategy
 from ..strategy.safeSync import SafeSyncStrategy
+from ..strategy.safeRestartable import SafeRestartableStrategy
 from ..strategy.mockAsync import MockAsyncStrategy
 from ..strategy.asynchronous import AsyncStrategy
 from ..strategy.reusable import ReusableStrategy
@@ -81,6 +82,7 @@ SASL_AVAILABLE_MECHANISMS = [EXTERNAL,
 
 CLIENT_STRATEGIES = [SYNC,
                      SAFE_SYNC,
+                     SAFE_RESTARTABLE,
                      ASYNC,
                      LDIF,
                      RESTARTABLE,
@@ -141,9 +143,9 @@ class Connection(object):
     :param version: LDAP version, default to 3
     :type version: int
     :param authentication: type of authentication
-    :type authentication: int, can be one of AUTH_ANONYMOUS, AUTH_SIMPLE or AUTH_SASL, as specified in ldap3
+    :type authentication: int, can be one of ANONYMOUS, SIMPLE or SASL, as specified in ldap3
     :param client_strategy: communication strategy used in the Connection
-    :type client_strategy: can be one of STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_LDIF_PRODUCER, STRATEGY_SYNC_RESTARTABLE, STRATEGY_REUSABLE_THREADED as specified in ldap3
+    :type client_strategy: can be one of SYNC, ASYNC, LDIF, RESTARTABLE, REUSABLE as specified in ldap3
     :param auto_referrals: specify if the connection object must automatically follow referrals
     :type auto_referrals: bool
     :param sasl_mechanism: mechanism for SASL authentication, can be one of 'EXTERNAL', 'DIGEST-MD5', 'GSSAPI', 'PLAIN'
@@ -284,6 +286,9 @@ class Connection(object):
             self.use_referral_cache = use_referral_cache
             self.auto_escape = auto_escape
             self.auto_encode = auto_encode
+            self._digest_md5_kic = None
+            self._digest_md5_kis = None
+            self._digest_md5_sec_num = 0
 
             port_err = check_port_and_port_list(source_port, source_port_list)
             if port_err:
@@ -324,6 +329,8 @@ class Connection(object):
                 self.strategy = SyncStrategy(self)
             elif self.strategy_type == SAFE_SYNC:
                 self.strategy = SafeSyncStrategy(self)
+            elif self.strategy_type == SAFE_RESTARTABLE:
+                self.strategy = SafeRestartableStrategy(self)
             elif self.strategy_type == ASYNC:
                 self.strategy = AsyncStrategy(self)
             elif self.strategy_type == LDIF:
@@ -530,7 +537,8 @@ class Connection(object):
                 if self.closed:
                     self.open()
                 if not self.bound:
-                    self.bind()
+                    if not self.bind():
+                        raise LDAPBindError('unable to bind')
 
             return self
 
@@ -709,7 +717,10 @@ class Connection(object):
                 try:
                     return self.bind(read_server_info, controls)
                 except LDAPSocketReceiveError:
-                    raise LDAPBindError('Unable to rebind as a different user, furthermore the server abruptly closed the connection')
+                    self.last_error = 'Unable to rebind as a different user, furthermore the server abruptly closed the connection'
+                    if log_enabled(ERROR):
+                        log(ERROR, '%s for <%s>', self.last_error, self)
+                    raise LDAPBindError(self.last_error)
             else:
                 self.strategy.pool.rebind_pool()
                 return self._prepare_return_value(True, self.result)
@@ -819,7 +830,10 @@ class Connection(object):
                     else:
                         attribute_name_to_check = attribute_name
                     if self.server.schema and attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
-                        raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
+                        self.last_error = 'invalid attribute type ' + attribute_name_to_check
+                        if log_enabled(ERROR):
+                            log(ERROR, '%s for <%s>', self.last_error, self)
+                        raise LDAPAttributeError(self.last_error)
 
             request = search_operation(search_base,
                                        search_filter,
@@ -885,10 +899,16 @@ class Connection(object):
                 attribute_name_to_check = attribute
 
             if self.server.schema.attribute_types and attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
-                raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
+                self.last_error = 'invalid attribute type ' + attribute_name_to_check
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', self.last_error, self)
+                raise LDAPAttributeError(self.last_error)
 
         if isinstance(value, SEQUENCE_TYPES):  # value can't be a sequence
-            raise LDAPInvalidValueError('value cannot be a sequence')
+            self.last_error = 'value cannot be a sequence'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', self.last_error, self)
+            raise LDAPInvalidValueError(self.last_error)
 
         with self.connection_lock:
             self._fire_deferred()
@@ -970,7 +990,10 @@ class Connection(object):
             if self.server and self.server.schema and self.check_names:
                 for object_class_name in _attributes[object_class_attr_name]:
                     if object_class_name.lower() not in conf_classes_excluded_from_check and object_class_name not in self.server.schema.object_classes:
-                        raise LDAPObjectClassError('invalid object class ' + str(object_class_name))
+                        self.last_error = 'invalid object class ' + str(object_class_name)
+                        if log_enabled(ERROR):
+                            log(ERROR, '%s for <%s>', self.last_error, self)
+                        raise LDAPObjectClassError(self.last_error)
 
                 for attribute_name in _attributes:
                     if ';' in attribute_name:  # remove tags for checking
@@ -979,7 +1002,10 @@ class Connection(object):
                         attribute_name_to_check = attribute_name
 
                     if attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
-                        raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
+                        self.last_error = 'invalid attribute type ' + attribute_name_to_check
+                        if log_enabled(ERROR):
+                            log(ERROR, '%s for <%s>', self.last_error, self)
+                        raise LDAPAttributeError(self.last_error)
 
             request = add_operation(dn, _attributes, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None, check_names=self.check_names)
             if log_enabled(PROTOCOL):
@@ -1097,7 +1123,10 @@ class Connection(object):
                         attribute_name_to_check = attribute_name
 
                     if self.server.schema.attribute_types and attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
-                        raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
+                        self.last_error = 'invalid attribute type ' + attribute_name_to_check
+                        if log_enabled(ERROR):
+                            log(ERROR, '%s for <%s>', self.last_error, self)
+                        raise LDAPAttributeError(self.last_error)
                 change = changes[attribute_name]
                 if isinstance(change, SEQUENCE_TYPES) and change[0] in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT, 0, 1, 2, 3]:
                     if len(change) != 2:
@@ -1328,7 +1357,6 @@ class Connection(object):
             log(BASIC, 'start NTLM BIND operation via <%s>', self)
         self.last_error = None
         with self.connection_lock:
-            result = None
             if not self.sasl_in_progress:
                 self.sasl_in_progress = True  # ntlm is same of sasl authentication
                 try:
@@ -1569,8 +1597,9 @@ class Connection(object):
                             entries.append(entry)
                             break
                     else:
+                        self.last_error = 'attribute set not found for ' + str(resp_attr_set)
                         if log_enabled(ERROR):
-                            log(ERROR, 'attribute set not found for %s in <%s>', resp_attr_set, self)
-                        raise LDAPObjectError('attribute set not found for ' + str(resp_attr_set))
+                            log(ERROR, self.last_error, self)
+                        raise LDAPObjectError(self.last_error)
 
         return entries

@@ -32,7 +32,7 @@ except ImportError:
 
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection,\
     ServerPool, SASL, STRING_TYPES, get_config_parameter, set_config_parameter, \
-    NONE, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC, NTLM, SAFE_SYNC, \
+    NONE, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC, NTLM, SAFE_SYNC, SAFE_RESTARTABLE, \
     AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS, SEQUENCE_TYPES, MODIFY_ADD
 from ldap3.protocol.schemas.edir914 import edir_9_1_4_schema, edir_9_1_4_dsa_info
 from ldap3.protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
@@ -43,7 +43,7 @@ from ldap3 import __version__ as ldap3_version
 from pyasn1 import __version__ as pyasn1_version
 
 test_strategy = getenv('STRATEGY', SYNC)  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
-test_server_type = getenv('SERVER', 'NONE')  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP, NONE (doesn't run test that require an external server)
+test_server_type = getenv('SERVER', 'EDIR')  # possible choices: EDIR (NetIQ eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP, NONE (doesn't run test that require an external server)
 
 test_verbose = True if getenv('VERBOSE', 'TRUE').upper() == 'TRUE' else False
 test_pool_size = 5
@@ -66,6 +66,13 @@ test_auto_encode = True
 test_lazy_connection = True if getenv('LAZY', 'FALSE').upper() == 'TRUE' else False
 test_user_password = 'Rc2597pfop'  # default password for users created in tests
 
+# overrides
+# test_strategy = 'ASYNC'
+# test_logging = True
+# test_lazy_connection = True
+# test_check_names = False
+# test_internal_decoder = False
+
 test_validator = {}
 try:
     location = environ['USERDOMAIN']
@@ -86,9 +93,6 @@ else:
 # test_strategy = ASYNC
 # test_server_type = 'AD'
 # test_internal_decoder = True
-
-# force testing with AD provided by Lucas Raab
-# location = 'ELITE10GC-AD-RAAB'
 
 if 'TRAVIS' in location:
     # test in the cloud
@@ -413,6 +417,42 @@ elif location == 'W10GC9227-AD':
     test_ntlm_password = 'Rc99pfop'
     test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['10.160.201.232']
+elif location == 'AZURE-AD2019':
+    test_server = 'win2019lab.westeurope.cloudapp.azure.com'
+    test_server_type = 'AD'
+    test_domain_name = 'TESTAD-2019.LAB'  # Active Directory Domain name
+    test_root_partition = 'DC=' + ',DC='.join(test_domain_name.split('.'))  # partition to use in DirSync
+    # users need permission to create/delete users and groups and such within this base
+    test_base = 'ou=test,' + test_root_partition  # base context where test objects are created
+    test_moved = 'ou=moved,OU=test,' + test_root_partition  # base context where objects are moved in ModifyDN operations
+    test_name_attr = 'cn'  # naming attribute for test objects
+    test_int_attr = 'logonCount'
+    test_multivalued_attribute = 'carLicense'
+    test_singlevalued_attribute = 'street'
+    test_server_context = ''  # used in novell eDirectory extended operations
+    test_server_edir_name = ''  # used in novell eDirectory extended operations
+    test_user = 'CN=testLab,CN=Users,' + test_root_partition  # the user that performs the tests
+    test_password = 'Rc999pfop'  # user password
+    test_secondary_user = 'CN=testLab2,CN=Users,' + test_root_partition
+    test_secondary_password = 'Rc666pfop'  # user password
+    # test_sasl_user = 'testLAB@' + test_domain_name
+    test_sasl_user = test_domain_name.split('.')[0] + '\\testLab'
+    test_sasl_password = 'Rc999pfop'
+    test_sasl_user_dn = 'cn=testLAB,o=resources'
+    test_sasl_secondary_user = 'CN=testLab2,CN=Users,' + test_root_partition
+    test_sasl_secondary_password = 'Rc666pfop'
+    test_sasl_secondary_user_dn = 'CN=testLAB2,CN=Users,' + test_root_partition
+    test_sasl_realm = None
+    test_ca_cert_file = ''  # CA cert is in the AD domain if we ever want to start testing with it
+    test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
+    test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
+    test_ntlm_user = test_domain_name.split('.')[0] + '\\testLab'
+    test_ntlm_password = test_password
+    test_logging_filename = path.join(gettempdir(), 'ldap3.log')
+    # add 'WIN2019.' + test_domain_name if we ever make tests use the AD domain for dns. otherwise, only the
+    # azure.com domain name will be resolvable.
+    # no IP addresses are in the SANs for this certificate because it's on Azure
+    test_valid_names = ['win2019lab.westeurope.cloudapp.azure.com']
 elif location.endswith('-NONE'):
     test_server = None
     test_root_partition = None
@@ -745,33 +785,38 @@ def add_user(connection, batch_id, username, password=None, attributes=None, tes
     dn = generate_dn(test_base, batch_id, username)
     if test_server_type == 'EDIR':  # in eDirectory first create the user with the password and then modify the other attributes
         # operation_result = connection.add(dn, None, {attribute: attributes[attribute] for attribute in attributes if attribute in ['userPassword', 'objectClass', 'sn', 'givenname']})
-        operation_result = connection.add(dn, None, dict((attribute, attributes[attribute]) for attribute in attributes if attribute in ['userPassword', 'objectClass', 'sn', 'givenname']))
+        for tries in range(1, 3):
+            operation_result = connection.add(dn, None, dict((attribute, attributes[attribute]) for attribute in attributes if attribute in ['userPassword', 'objectClass', 'sn', 'givenname']))
+            result = get_operation_result(connection, operation_result)
+            if result['description'] == 'success':
+                break
+            # maybe the entry already exists, try to delete
+            operation_result = connection.delete(dn)
+            sleep(5)
+        else:
+
+            raise Exception('unable to create user ' + dn)
+
         changes = dict((attribute, [(MODIFY_ADD, attributes[attribute])]) for attribute in attributes if attribute not in ['userPassword', 'objectClass', 'sn', 'givenname'])
         if changes:
-            operation_result = connection.modify(dn, changes)
-    else:
-        operation_result = connection.add(dn, None, attributes)
-    result = get_operation_result(connection, operation_result)
-    if not result['description'] == 'success':
-        # maybe the entry already exists, try to delete
-        operation_result = connection.delete(dn)
-        sleep(5)
-        if test_server_type == 'EDIR':  # in eDirectory first create the user with the password and then modify the other attributes
-            operation_result = connection.add(dn, None, dict((attribute, attributes[attribute]) for attribute in attributes if
-                                                         attribute in ['userPassword', 'objectClass', 'sn',
-                                                                       'givenname']))
-            if test_strategy == 'REUSABLE':
-                sleep(5)  # wait for the previous operation to complete
-            changes = dict((attribute, [(MODIFY_ADD, attributes[attribute])]) for attribute in attributes if
-                       attribute not in ['userPassword', 'objectClass', 'sn', 'givenname'])
-            if changes:
+            for tries in range(1, 3):
                 operation_result = connection.modify(dn, changes)
-        else:
+                result = get_operation_result(connection, operation_result)
+                if result['description'] == 'success':
+                    break
+                print('retry...')
+                sleep(2)
+    else:
+        for tries in range(1, 3):
             operation_result = connection.add(dn, None, attributes)
-        result = get_operation_result(connection, operation_result)
-        if not result['description'] == 'success':
-            # print(attributes)
-            raise Exception('unable to create user ' + dn + ': ' + str(result))
+            result = get_operation_result(connection, operation_result)
+            if result['description'] == 'success':
+                break
+            print('Adding user at DN {} failed. Will attempt to delete entry if it already exists. '
+                  'Result of operation: {}'.format(dn, result))
+            # maybe the entry already exists, try to delete
+            operation_result = connection.delete(dn)
+            sleep(5)
 
     return dn, result
 

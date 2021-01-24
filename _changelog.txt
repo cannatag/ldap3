@@ -1,3 +1,21 @@
+# 2.9 - 2021.01.24
+    - new feature: SafeRestartable strategy (SAFE_RESTARTABLE) for using a restartable Connection object in a multi-threading program
+    - tested against Python 3.9
+    - added requirements-dev.txt
+    - fixed logging unicode exceptions in python2.7
+    - added more granular control over use of reverse dns with Kerberos (thanks Azaria)
+    - support MS Active Directory persistent search (thanks eLeX)
+    - added support for LDAP signing when using DIGEST-MD5 authentication (thanks Augustin-FL)
+    - check only for searchResEntries in LDIF conversion (thanks Jay)
+    - modify-increment now works properly in mock strategies (thanks Saint-Marcel)
+    - objectGUID are now converted properly (thanks Janne)
+    - default timeout in asynchronous strategies raised to 20 seconds
+
+# 2.8.1 - 2020.09.07
+    - fixed regression in 2.8 for members returned in AD auto-range search (thanks Felix)
+    - fixed regression in 2.8 for attribute error in restartable class (thanks Christian)
+    - try to use Crypto library if present for hashing NTLM password on python interpreter missing the MD4 OpenSSL algorithm (thanks Doron)
+
 # 2.8 - 2020.08.08
     - new feature: SafeSync strategy (SAFE_SYNC) for using a synchronous Connection object in a multi-threading program
     - new feature: LDIF_LINE_LENGTH for specifying line length wrapping in ldif-content output (default to 78 as per RFC 2849)
@@ -11,7 +29,7 @@
     - fixed delete_old_dn in mock connections (thanks kpinc)
     - fixed a ResourceWarning with lazy connections
     - fixed entry_to_json() that in python2 modified the original entry value (thanks Dirk-Jan)
-    - tests desnt' raise Exception if real server is not present (thanks Matej)
+    - tests doesnt' raise Exception if real server is not present (thanks Matej)
 
 # 2.7 - 2020.03.01
     - tested against Python 3.8.1 and pyasn1 0.4.8
@@ -426,7 +444,7 @@
     - STRATEGY_SYNC_RESTARTABLE = RESTARTABLE
     - STRATEGY_REUSABLE_THREADED = REUSABLE
     - STRATEGY_MOCK_SYNC = MOCK_SYNC
-    - STRATEGY_MOCK_ASYNC = MOCK_SYNC
+    - STRATEGY_MOCK_ASYNC = MOCK_ASYNC
     - POOLING_STRATEGY_FIRST = FIRST
     - POOLING_STRATEGY_ROUND_ROBIN = ROUND_ROBIN
     - POOLING_STRATEGY_RANDOM = RANDOM

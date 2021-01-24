@@ -170,8 +170,8 @@ class Test(unittest.TestCase):
         except  KeyError:
             pass
 
-        e = r['-2']  # exact match
-        self.assertTrue('mat-2' in e.entry_dn)
+        e = r['-3']  # exact match. use -3 because there's domains with -20xx for the year in their name
+        self.assertTrue('mat-3' in e.entry_dn)
 
         try:
             e = r['no-match']  # no match
@@ -195,7 +195,7 @@ class Test(unittest.TestCase):
 
         e = r.match_dn('mat')  # multiple matches
         self.assertEqual(len(e), 3)
-        e = r.match_dn('-2')  # single match
+        e = r.match_dn('-3')  # single match. there's domains with -20xx in their names, so use -3 to match
         self.assertEqual(len(e), 1)
         e = r.match_dn('no-match')  # no match
         self.assertEqual(len(e), 0)

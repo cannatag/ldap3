@@ -22,9 +22,10 @@ ldap3 can be used with any Python version starting from 2.6, including all Pytho
 
 
 .. note::
-   Version 2.8 of ldap3 introduced **SafeSync**, a new connection strategy that can be used in multithreaded programs. In previous version only the
-   ASYNC strategy was thread safe.
-   Each LDAP operation with the SafeSync strategy returns a tuple of four elements: status, result, response and request.
+   Thread safe strategies
+
+   In multithreaded programs you must use on of **SAFE_SYNC** (synchronous connection strategy), **SAFE_RESTARTABLE** (restartable syncronous connection strategy) or **ASYNC** (asynchronous connection strategy).
+   Each LDAP operation with SAFE_SYNC or SAFE_RESTARTABLE strategies returns a tuple of four elements: status, result, response and request.
 
    * status: states if the operation was successful
 
@@ -35,13 +36,15 @@ ldap3 can be used with any Python version starting from 2.6, including all Pytho
    * request: the original request of the operation
 
    The SafeSync strategy can be used with the Abstract Layer, but the Abstract Layer currently is NOT thread safe.
-   The SafeSync import name is *SAFE_SYNC*::
+   For example, to use *SAFE_SYNC*::
 
       from ldap3 import Server, Connection, SAFE_SYNC
       server = Server('my_server')
-      conn = Connection(s, 'my_user', 'my_password', strategy=SAFE_SYNC, auto_bind=True)
-      status, result, response, _ = conn.search('o=test', '(objectclass=*)')  # usually you don't need the original request (4th element of the return tuple)
+      conn = Connection(server, 'my_user', 'my_password', client_strategy=SAFE_SYNC, auto_bind=True)
+      status, result, response, _ = conn.search('o=test', '(objectclass=*)')  # usually you don't need the original request (4th element of the returned tuple)
 
+
+   With *ASYNC* you must request the response with the *get_response()* method.
 
 Contents
 --------

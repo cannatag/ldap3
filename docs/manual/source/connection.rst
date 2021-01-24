@@ -13,11 +13,15 @@ The following strategies are available:
 
 * RESTARTABLE: an automatically restartable synchronous connection. It retries operation for the specified number of times or forever.
 
-* SAFE_SYNC: each operation returns a tuple of 4 elements: status, result, response, request
+* REUSABLE: an asynchronous strategy that internally opens multiple connections to the Server (or multiple Servers via the ServerPool) each in a different thread
+
+* SAFE_SYNC: the request is sent and the connection waits until the response is received. Each operation returns a tuple of 4 elements: status, result, response, request. This strategy is thread-safe.
+
+* SAFE_RESTARTABLE: the request is sent and the connection waits until the response is received. Each operation returns a tuple of 4 elements: status, result, response, request, connection restarts if failing for the specified number of times or forever. This strategy is thread-safe.
 
 .. note::
-   **SafeSync** strategy can be used in multithreaded programs.
-   Each LDAP operation with the SafeSync strategy returns a tuple of four elements: status, result, response and request.
+   **SafeSync** and **SafeRestartable** strategies can be used in multithreaded programs.
+   Each LDAP operation with the SafeSync or SafeRestartable strategies returns a tuple of four elements: status, result, response and request.
 
    * status: states if the operation was successful
 
@@ -32,9 +36,7 @@ The following strategies are available:
       conn = Connection(s, 'my_user', 'my_password', strategy=SAFE_SYNC, auto_bind=True)
       status, result, response, _ = conn.search('o=test', '(objectclass=*)')  # usually you don't need the original request (4th element of the return tuple)
 
-   The SafeSync strategy can be used with the Abstract Layer, but the Abstract Layer currently is NOT thread safe.
-
-* REUSABLE: an asynchronous strategy that internally opens multiple connections to the Server (or multiple Servers via the ServerPool) each in a different thread
+   The SafeSync and SafeRestartable strategies can be used with the Abstract Layer, but the Abstract Layer currently is NOT thread safe.
 
 
 .. note:: Lazy connections
@@ -58,13 +60,13 @@ Connection parameters are:
 
 * version: LDAP protocol version (defaults to 3).
 
-* authentication: authentication method, can be one of ANONYMOUS, SIMPLE, SASL or NTLM. Defaults to AUTH_ANONYMOUS if user and password are both None else defaults to AUTH_SIMPLE. NTLM uses NTLMv2 authentication. Username must be in the form domain\\user.
+* authentication: authentication method, can be one of ANONYMOUS, SIMPLE, SASL or NTLM. Defaults to ANONYMOUS if user and password are both None else defaults to SIMPLE. NTLM uses NTLMv2 authentication. Username must be in the form domain\\user.
 
 * client_strategy: communication strategy used by the client (defaults to SYNC).
 
 * auto_referrals: specify if the Connection must follows referrals automatically (defaults to True). Allowed referral servers are specified in the Server object.
 
-* sasl_mechanism: specify the SASL mechanism to use for AUTH_SASL authentication. Available mechanism are EXTERNAL, DIGEST-MD5 (**deprecated** by RFCs because insecure) and GSSAPI.
+* sasl_mechanism: specify the SASL mechanism to use for SASL authentication. Available mechanism are EXTERNAL, DIGEST-MD5 (**deprecated** by RFCs because insecure) and GSSAPI.
 
 * sasl_credential: an object specific to the SASL mechanism chosen. Refer to the documentation for each SASL mechanism supported.
 

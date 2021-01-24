@@ -37,11 +37,11 @@ DIGEST_MD5 = 'DIGEST-MD5'
 KERBEROS = GSSAPI = 'GSSAPI'
 PLAIN = 'PLAIN'
 
-AUTO_BIND_DEFAULT = 'DEFAULT'  # binds connection whens using "with" context manager
-AUTO_BIND_NONE = 'NONE'  # same as False
-AUTO_BIND_NO_TLS = 'NO_TLS'  # same as True
-AUTO_BIND_TLS_BEFORE_BIND = 'TLS_BEFORE_BIND'
-AUTO_BIND_TLS_AFTER_BIND = 'TLS_AFTER_BIND'
+AUTO_BIND_DEFAULT = 'DEFAULT'  # binds connection when using "with" context manager
+AUTO_BIND_NONE = 'NONE'  # same as False, no bind is performed
+AUTO_BIND_NO_TLS = 'NO_TLS'  # same as True, bind is performed without tls
+AUTO_BIND_TLS_BEFORE_BIND = 'TLS_BEFORE_BIND'  # start_tls is performed before bind
+AUTO_BIND_TLS_AFTER_BIND = 'TLS_AFTER_BIND'  # start_tls is performed after bind
 
 # server IP dual stack mode
 IP_SYSTEM_DEFAULT = 'IP_SYSTEM_DEFAULT'
@@ -75,6 +75,7 @@ MODIFY_INCREMENT = 'MODIFY_INCREMENT'
 # client strategies
 SYNC = 'SYNC'
 SAFE_SYNC = 'SAFE_SYNC'
+SAFE_RESTARTABLE = 'SAFE_RESTARTABLE'
 ASYNC = 'ASYNC'
 LDIF = 'LDIF'
 RESTARTABLE = 'RESTARTABLE'

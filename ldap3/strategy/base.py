@@ -34,7 +34,7 @@ from struct import pack
 from platform import system
 from random import choice
 
-from .. import SYNC, ANONYMOUS, get_config_parameter, BASE, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES
+from .. import SYNC, ANONYMOUS, get_config_parameter, BASE, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES, DIGEST_MD5
 from ..core.results import DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, LDAPStartTLSError, \
@@ -62,6 +62,7 @@ from ..protocol.microsoft import DirSyncControlResponseValue
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
 from ..utils.asn1 import encode, decoder, ldap_result_to_dict_fast, decode_sequence
 from ..utils.conv import to_unicode
+from ..protocol.sasl.digestMd5 import md5_h, md5_hmac
 
 SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'
 TRANSACTION_ERROR = 'TRANSACTION_ERROR'
@@ -154,7 +155,6 @@ class BaseStrategy(object):
 
             self.connection._deferred_open = False
             self._start_listen()
-            # self.connection.do_auto_bind()
             if log_enabled(NETWORK):
                 log(NETWORK, 'connection open for <%s>', self.connection)
 
@@ -276,7 +276,6 @@ class BaseStrategy(object):
                 self.connection.last_error = 'socket ssl wrapping error: ' + str(e)
                 if log_enabled(ERROR):
                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
-                # raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
                 raise communication_exception_factory(LDAPSocketOpenError, type(e)(str(e)))(self.connection.last_error)
         if self.connection.usage:
             self.connection._usage.open_sockets += 1
@@ -351,7 +350,7 @@ class BaseStrategy(object):
             timeout = get_config_parameter('RESPONSE_WAITING_TIMEOUT')
         response = None
         result = None
-        request = None
+        # request = None
         if self._outstanding and message_id in self._outstanding:
             responses = self._get_response(message_id, timeout)
 
@@ -597,9 +596,9 @@ class BaseStrategy(object):
             control_value = dict()
             control_value['result'] = attributes_to_dict(control_resp['attributes'])
         if unprocessed:
-                if log_enabled(ERROR):
-                    log(ERROR, 'unprocessed control response in substrate')
-                raise LDAPControlError('unprocessed control response in substrate')
+            if log_enabled(ERROR):
+                log(ERROR, 'unprocessed control response in substrate')
+            raise LDAPControlError('unprocessed control response in substrate')
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 
     @staticmethod
@@ -697,15 +696,15 @@ class BaseStrategy(object):
                                                 dereference_aliases=request['dereferenceAlias'],
                                                 attributes=[attr_type + ';range=' + str(int(high_range) + 1) + '-*'])
                 if self.connection.strategy.thread_safe:
-                    status, result, response, _ = result
+                    status, result, _response, _ = result
                 else:
                     status = result
                     result = self.connection.result
-                    response = self.connection.response
+                    _response = self.connection.response
 
                 if self.connection.strategy.sync:
                     if status:
-                        current_response = response[0]
+                        current_response = _response[0]
                     else:
                         done = True
                 else:
@@ -718,7 +717,6 @@ class BaseStrategy(object):
                         del current_response['attributes'][requested_range]
                     attr_name = list(filter(lambda a: ';range=' in a, current_response['raw_attributes'].keys()))[0]
                     continue
-
             done = True
 
     def do_search_on_auto_range(self, request, response):
@@ -870,6 +868,16 @@ class BaseStrategy(object):
             log(NETWORK, 'sending 1 ldap message for <%s>', self.connection)
         try:
             encoded_message = encode(ldap_message)
+            if self.connection.sasl_mechanism == DIGEST_MD5 and self.connection._digest_md5_kic and not self.connection.sasl_in_progress:
+                # If we are using DIGEST-MD5 and LDAP signing is enabled: add a signature to the message
+                sec_num = self.connection._digest_md5_sec_num  # added underscore GC
+                kic = self.connection._digest_md5_kic  # lowercase GC
+
+                # RFC 2831 : encoded_message = sizeOf(encored_message + signature + 0x0001 + secNum) + encoded_message + signature + 0x0001 + secNum
+                signature = bytes.fromhex(md5_hmac(kic, int(sec_num).to_bytes(4, 'big') + encoded_message)[0:20])
+                encoded_message = int(len(encoded_message) + 4 + 2 + 10).to_bytes(4, 'big') + encoded_message + signature + int(1).to_bytes(2, 'big') + int(sec_num).to_bytes(4, 'big')
+                self.connection._digest_md5_sec_num += 1
+
             self.connection.socket.sendall(encoded_message)
             if log_enabled(EXTENDED):
                 log(EXTENDED, 'ldap message sent via <%s>:%s', self.connection, format_ldap_message(ldap_message, '>>'))

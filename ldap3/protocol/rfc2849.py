@@ -126,7 +126,7 @@ def search_response_to_ldif(entries, all_base64, sort_order=None):
     lines = []
     if entries:
         for entry in entries:
-            if not entry:
+            if not entry or entry['type'] != 'searchResEntry':
                 continue
             if 'dn' in entry:
                 lines.append(_convert_to_ldif('dn', entry['dn'], all_base64))

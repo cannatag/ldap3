@@ -1,4 +1,4 @@
-# 2.9 - not yet released
+# 2.9 - 2021.01.24
     - new feature: SafeRestartable strategy (SAFE_RESTARTABLE) for using a restartable Connection object in a multi-threading program
     - tested against Python 3.9
     - added requirements-dev.txt
@@ -9,6 +9,7 @@
     - check only for searchResEntries in LDIF conversion (thanks Jay)
     - modify-increment now works properly in mock strategies (thanks Saint-Marcel)
     - objectGUID are now converted properly (thanks Janne)
+    - default timeout in asynchronous strategies raised to 20 seconds
 
 # 2.8.1 - 2020.09.07
     - fixed regression in 2.8 for members returned in AD auto-range search (thanks Felix)

@@ -1,4 +1,4 @@
-$PythonVersions = @('2.7', '3.9')
+$PythonVersions = @('3.9', '2.7')
 $Strategies = @('SYNC', 'ASYNC', 'SAFE_SYNC', 'RESTARTABLE', 'SAFE_RESTARTABLE')
 $Servers = @('EDIR')
 $Decoders = @('INTERNAL', 'EXTERNAL')
@@ -30,12 +30,14 @@ function RunTestSuite
     $env:DECODER=$Decoder
     
     if ($Python -eq "2.7") {
-        # Start-Process py -2.7 -m unittest discover -s test -c
         py -2.7 -m unittest discover -s test -c
     }
     elseif ($Python -eq "3.9") {
-        # Start-Process .\venv\Scripts\python -m unittest discover -s test -c
         .\venv\Scripts\python -m unittest discover -s test -c
+    }
+        elseif ($Python -eq "2.6") {
+            $env:PYTHONIOENCODING="UTF8"
+            .\venv\Scripts\python -m unittest discover -s test -c
     }
     else {
         Write-Host "Unknown Python version " + $Python

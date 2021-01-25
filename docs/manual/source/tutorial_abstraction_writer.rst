@@ -51,14 +51,14 @@ Entries in a Writer cursor are standard Python object, so you can modify them wi
 The entry is in **Writable** status now, so you can try to update some values. All modifications are stored in memory until committed or the entry
 is returned to its original values::
 
-    >>> w[0].sn += 'Smyth'  # Add 'Smith' value from the sn
+    >>> w[0].sn += 'Smith'  # Add 'Smith' value from the sn
     >>> w[0].sn += 'Johnson'  # Add 'Johnson' value from the sn
     >>> w[0].sn -= 'Young'  # remove the 'Young' value from the sn
 
 Now let's revise the modifications we have requested::
 
     >>> w[0].entry_changes
-    OrderedDict([('sn', [('MODIFY_ADD', ['Smyth']), ('MODIFY_ADD', ['Johnson']), ('MODIFY_DELETE', ['Young'])])])
+    OrderedDict([('sn', [('MODIFY_ADD', ['Smith']), ('MODIFY_ADD', ['Johnson']), ('MODIFY_DELETE', ['Young'])])])
 
 Modifications to an Entry are stored in a way (OrderedDict) that preserves the insertion sequence. This can be helpful with specific LDAP
 operations that request that an attribute is modified before an other one in the same LDAP operation

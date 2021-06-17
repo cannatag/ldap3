@@ -194,6 +194,15 @@ class BaseStrategy(object):
         Tries to open and connect a socket to a Server
         raise LDAPExceptionError if unable to open or connect socket
         """
+        def _cleanup_socket():
+            """ Close the open socket. Call before raising exceptions so no
+                lingering sockets are left about.
+            """
+            try:
+                self.connection.socket.close()
+            except OSError:
+                pass
+
         try:
             self.connection.socket = socket.socket(*address[:3])
         except Exception as e:
@@ -231,6 +240,7 @@ class BaseStrategy(object):
                 if log_enabled(ERROR):
                     log(ERROR, 'Unable to locally bind to local address <%s> with any of the source ports <%s> for connection <%s due to <%s>',
                         self.connection.source_address, self.connection.source_port_list, self.connection, last_bind_exc)
+                _cleanup_socket()
                 raise communication_exception_factory(LDAPSocketOpenError, type(last_bind_exc)(str(last_bind_exc)))(last_bind_exc)
 
         try:  # set socket timeout for opening connection
@@ -242,6 +252,7 @@ class BaseStrategy(object):
             if log_enabled(ERROR):
                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             # raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
+            _cleanup_socket()
             raise communication_exception_factory(LDAPSocketOpenError, type(e)(str(e)))(self.connection.last_error)
 
         # Set connection recv timeout (must be set after connect,
@@ -265,6 +276,7 @@ class BaseStrategy(object):
         #     raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
                 if log_enabled(ERROR):
                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                _cleanup_socket()
                 raise communication_exception_factory(LDAPSocketOpenError, type(e)(str(e)))(self.connection.last_error)
 
         if use_ssl:
@@ -276,6 +288,7 @@ class BaseStrategy(object):
                 self.connection.last_error = 'socket ssl wrapping error: ' + str(e)
                 if log_enabled(ERROR):
                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                _cleanup_socket()
                 raise communication_exception_factory(LDAPSocketOpenError, type(e)(str(e)))(self.connection.last_error)
         if self.connection.usage:
             self.connection._usage.open_sockets += 1

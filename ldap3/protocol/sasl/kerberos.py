@@ -182,7 +182,7 @@ def _common_determine_authz_id_and_creds(connection):
         if len(connection.sasl_credentials) >= 2 and connection.sasl_credentials[1]:
             authz_id = connection.sasl_credentials[1].encode("utf-8")
         if len(connection.sasl_credentials) >= 3 and connection.sasl_credentials[2]:
-            if not posix_gssapi_unavailable:
+            if posix_gssapi_unavailable:
                 raise LDAPPackageUnavailableError('The winkerberos package does not support specifying raw  credentials'
                                                   'to initiate GSSAPI Kerberos communication. A ticket granting ticket '
                                                   'must have already been obtained for the user before beginning a '

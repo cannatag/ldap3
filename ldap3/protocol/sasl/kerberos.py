@@ -129,7 +129,7 @@ def _common_determine_target_name(connection):
     if connection.sasl_credentials[0] is True:
         hostname = get_hostname_by_addr(connection.socket.getpeername()[0])
         target_name = 'ldap@' + hostname
-    elif isinstance(connection.sasl_credentials[0], ReverseDnsSetting):
+    elif connection.sasl_credentials[0] in ReverseDnsSetting.SUPPORTED_VALUES:
         rdns_setting = connection.sasl_credentials[0]
         # if the rdns_setting is OFF then we won't enter any branch here and will leave hostname as server host,
         # so we'll just use the server host, whatever it is

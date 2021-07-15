@@ -41,6 +41,15 @@ class Test(unittest.TestCase):
         self.assertEqual(ReverseDnsSetting.OPTIONAL_RESOLVE_ALL_ADDRESSES, (3,), fail_msg)
         self.assertEqual(ReverseDnsSetting.OPTIONAL_RESOLVE_IP_ADDRESSES_ONLY, (4,), fail_msg)
 
+        fail_msg = ('Removing values from the set of supported values for reverse dns settings will break '
+                    'backwards compatibility for existing clients on older versions of the ldap3 package. '
+                    'Please do not remove values.')
+        self.assertTrue(ReverseDnsSetting.OFF in ReverseDnsSetting.SUPPORTED_VALUES, fail_msg)
+        self.assertTrue(ReverseDnsSetting.REQUIRE_RESOLVE_ALL_ADDRESSES in ReverseDnsSetting.SUPPORTED_VALUES, fail_msg)
+        self.assertTrue(ReverseDnsSetting.REQUIRE_RESOLVE_IP_ADDRESSES_ONLY in ReverseDnsSetting.SUPPORTED_VALUES, fail_msg)
+        self.assertTrue(ReverseDnsSetting.OPTIONAL_RESOLVE_ALL_ADDRESSES in ReverseDnsSetting.SUPPORTED_VALUES, fail_msg)
+        self.assertTrue(ReverseDnsSetting.OPTIONAL_RESOLVE_IP_ADDRESSES_ONLY in ReverseDnsSetting.SUPPORTED_VALUES, fail_msg)
+
     def test_ipv4_ip_addr_checking(self):
         valid = is_ip_addr('10.254.76.5')
         self.assertTrue(valid, 'IPv4 addresses should be identified as ip addresses')

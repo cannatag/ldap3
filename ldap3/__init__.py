@@ -141,6 +141,7 @@ from .core.server import Server
 from .core.connection import Connection
 from .core.tls import Tls
 from .core.pooling import ServerPool
+from .core.rdns import ReverseDnsSetting
 from .abstract.objectDef import ObjectDef
 from .abstract.attrDef import AttrDef
 from .abstract.attribute import Attribute, WritableAttribute, OperationalAttribute

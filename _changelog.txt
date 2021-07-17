@@ -1,3 +1,6 @@
+# 2.9.1 - 2021.07.17
+    - fixes
+
 # 2.9 - 2021.01.24
     - new feature: SafeRestartable strategy (SAFE_RESTARTABLE) for using a restartable Connection object in a multi-threading program
     - tested against Python 3.9

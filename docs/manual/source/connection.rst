@@ -33,7 +33,7 @@ The following strategies are available:
 
       from ldap3 import Server, Connection, SAFE_SYNC
       server = Server('my_server')
-      conn = Connection(s, 'my_user', 'my_password', strategy=SAFE_SYNC, auto_bind=True)
+      conn = Connection(server, 'my_user', 'my_password', client_strategy=SAFE_SYNC, auto_bind=True)
       status, result, response, _ = conn.search('o=test', '(objectclass=*)')  # usually you don't need the original request (4th element of the return tuple)
 
    The SafeSync and SafeRestartable strategies can be used with the Abstract Layer, but the Abstract Layer currently is NOT thread safe.
@@ -285,7 +285,7 @@ Connection attributes:
 
 * closed: True if the socket is not open
 
-* strategy_type: the strategy type used by the connection
+* strategy_type: the client strategy type used by the connection
 
 * strategy: the strategy instance used by the connection
 

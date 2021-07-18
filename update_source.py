@@ -22,7 +22,7 @@ long_description = str(open('README.rst').read())
 
 with open(path.join(package_name, 'version.py'), 'w+') as project_version_file:
     project_version_file.write('\n'.join([
-        '# THIS FILE IS AUTO-GENERATED. PLEASE DO NOT MODIFY'
+        '# THIS FILE IS AUTO-GENERATED. PLEASE DO NOT MODIFY',
         '# version file for ' + package_name,
         '# generated on ' + datetime.now().__str__(),
         '# on system ' + str(uname()),

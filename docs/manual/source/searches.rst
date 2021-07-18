@@ -372,7 +372,7 @@ Working with a list keeps all the found entries in a list and you can elaborate 
                                                 paged_size = 5,
                                                 generator=False)
     for entry in entry_list:
-        print entry['attributes']
+        print(entry['attributes'])
     total_entries = len(entry_list)
     print('Total entries retrieved:', total_entries)
 

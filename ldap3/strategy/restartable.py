@@ -149,7 +149,7 @@ class RestartableStrategy(SyncStrategy):
                 try:  # reopening connection
                     self.connection.open(reset_usage=False, read_server_info=False)
                     if self._restart_tls:  # restart tls if start_tls was previously used
-                        if self.connection.start_tls(read_server_info=False):
+                        if not self.connection.start_tls(read_server_info=False):
                             error = 'restart tls in restartable not successful' + (' - ' + self.connection.last_error if self.connection.last_error else '')
                             if log_enabled(ERROR):
                                 log(ERROR, '%s for <%s>', error, self)

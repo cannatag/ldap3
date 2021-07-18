@@ -1,3 +1,11 @@
+# 2.9.1 - 2021.07.18
+    - new feature: added support for using Kerberos authentication on windows clients using the native winkerberos library
+    - new feature: added support for using Channel Bind tokens with Kerberos authentication on windows clients
+    - fixed a bug related to using start_tls with a RESTARTABLE strategy that caused errors to be raised erroneously.
+    - fixed a bug around the type checking of Reverse DNS Settings with Kerberos authentication
+    - fixed an issue related to decoding unicode strings in LDAP referrals and attributes in python 2
+    - minor documentation updates and corrections
+
 # 2.9 - 2021.01.24
     - new feature: SafeRestartable strategy (SAFE_RESTARTABLE) for using a restartable Connection object in a multi-threading program
     - tested against Python 3.9

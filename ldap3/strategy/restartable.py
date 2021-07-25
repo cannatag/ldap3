@@ -117,7 +117,10 @@ class RestartableStrategy(SyncStrategy):
         self._current_request = request
         self._current_controls = controls
         if not self._restart_tls:  # RFCs doesn't define how to stop tls once started
-            self._restart_tls = self.connection.tls_started
+            # to better support mixing LDAPS and StartTLS servers within a server pool, set TLS
+            # as something that should restart if we're using StartTLS or LDAPS right now, so
+            # that we don't protection if we failover across servers
+            self._restart_tls = self.connection.tls_started or self.connection.server.ssl
         if message_type == 'bindRequest':  # stores controls used in bind operation to be used again when restarting the connection
             self._last_bind_controls = controls
 
@@ -148,7 +151,13 @@ class RestartableStrategy(SyncStrategy):
                 failure = False
                 try:  # reopening connection
                     self.connection.open(reset_usage=False, read_server_info=False)
-                    if self._restart_tls:  # restart tls if start_tls was previously used
+                    # restart tls if start_tls was previously used and the current server isn't using LDAPS.
+                    # a serverpool might mix LDAPS servers and StartTLS servers, so only initiate a startTLS op
+                    # if the current server isn't already using LDAPS
+                    if self._restart_tls and self.connection.server.ssl and log_enabled(BASIC):
+                        log(BASIC, 'Not restarting tls with StartTLS in restartable connection because LDAPS '
+                                   'is in use for current server, and started on connection opening')
+                    if self._restart_tls and not self.connection.server.ssl:
                         if not self.connection.start_tls(read_server_info=False):
                             error = 'restart tls in restartable not successful' + (' - ' + self.connection.last_error if self.connection.last_error else '')
                             if log_enabled(ERROR):

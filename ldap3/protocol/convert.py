@@ -30,6 +30,15 @@ from ..protocol.rfc4511 import Controls, Control
 from ..utils.conv import to_raw, to_unicode, escape_filter_chars, is_filter_escaped
 from ..protocol.formatters.standard import find_attribute_validator
 
+# pulled from https://github.com/cannatag/ldap3/commit/7718844ff5f215fd3b88668df17405662d5902ed
+def to_str_or_normalized_unicode(val):
+    """ Attempt to convert value to a string. If that would error, convert it to normalized unicode.
+    Python 3 string conversion handles unicode -> str without issue, but python 2 doesn't.
+    """
+    try:
+        return str(val)
+    except:
+        return val.encode('ascii', 'backslashreplace')
 
 def attribute_to_dict(attribute):
     try:
@@ -45,16 +54,18 @@ def attributes_to_dict(attributes):
     return attributes_dict
 
 
+# pulled from https://github.com/cannatag/ldap3/commit/7718844ff5f215fd3b88668df17405662d5902ed
 def referrals_to_list(referrals):
-    return [str(referral) for referral in referrals if referral] if referrals else None
+    return [to_str_or_normalized_unicode(referral) for referral in referrals if referral] if referrals else None
 
 
 def search_refs_to_list(search_refs):
     return [str(search_ref) for search_ref in search_refs if search_ref] if search_refs else None
 
 
+# pulled from https://github.com/cannatag/ldap3/commit/7718844ff5f215fd3b88668df17405662d5902ed
 def search_refs_to_list_fast(search_refs):
-    return [to_unicode(search_ref) for search_ref in search_refs if search_ref] if search_refs else None
+    return [to_str_or_normalized_unicode(search_ref) for search_ref in search_refs if search_ref] if search_refs else None
 
 
 def sasl_to_dict(sasl):
@@ -80,8 +91,9 @@ def changes_to_list(changes):
     return [change_to_dict(change) for change in changes]
 
 
+# pulled from https://github.com/cannatag/ldap3/commit/7718844ff5f215fd3b88668df17405662d5902ed
 def attributes_to_list(attributes):
-    return [str(attribute) for attribute in attributes]
+    return [to_str_or_normalized_unicode(attribute) for attribute in attributes]
 
 
 def ava_to_dict(ava):

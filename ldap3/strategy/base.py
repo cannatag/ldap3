@@ -53,7 +53,7 @@ from ..operation.extended import extended_request_to_dict, extended_response_to_
 from ..core.server import Server
 from ..operation.modifyDn import modify_dn_request_to_dict, modify_dn_response_to_dict
 from ..operation.delete import delete_response_to_dict, delete_request_to_dict
-from ..protocol.convert import prepare_changes_for_request, build_controls_list
+from ..protocol.convert import prepare_changes_for_request, prepare_referrals_for_request, build_controls_list
 from ..operation.abandon import abandon_request_to_dict
 from ..core.tls import Tls
 from ..protocol.oid import Oids
@@ -380,7 +380,10 @@ class BaseStrategy(object):
                 if self.connection.usage:
                     self.connection._usage.referrals_received += 1
                 if self.connection.auto_referrals:
-                    ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], responses[-2]['referrals'])
+                    ref_response, ref_result = self.do_operation_on_referral(
+                        self._outstanding[message_id],
+                        prepare_referrals_for_request(responses[-2]['referrals'])
+                    )
                     if ref_response is not None:
                         responses = ref_response + [ref_result]
                         responses.append(RESPONSE_COMPLETE)

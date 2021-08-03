@@ -121,6 +121,17 @@ def prepare_changes_for_request(changes):
         prepared[attribute_name].append((change['operation'], change['attribute']['value']))
     return prepared
 
+def prepare_referrals_for_request(referrals):
+    """in python2 before send a referral dn to "do_operation_on_referral"
+    we have to decode it back to unicode, because LDAP server doesn't understand an escaped unicode byte string"""
+    prepared = []
+    for referral in referrals:
+        try:
+            prepared.append(referral.decode("unicode-escape"))
+        except Exception:
+            prepared.append(referral)
+    return prepared
+
 
 def build_controls_list(controls):
     """controls is a sequence of Control() or sequences

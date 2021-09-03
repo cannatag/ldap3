@@ -47,7 +47,12 @@ if pyasn1_version == 'xxx0.2.3':
 
     tagMap[Boolean.tagSet] = BooleanCEREncoder()
 else:
-    from pyasn1.codec.ber.encoder import tagMap, typeMap, AbstractItemEncoder
+    if pyasn1_version >= '0.5.0':
+        from pyasn1.codec.ber.encoder import AbstractItemEncoder
+        from pyasn1.codec.ber.encoder import TAG_MAP as tagMap
+        from pyasn1.codec.ber.encoder import TYPE_MAP as typeMap
+    else:
+        from pyasn1.codec.ber.encoder import tagMap, typeMap, AbstractItemEncoder
     from pyasn1.type.univ import Boolean
     from copy import deepcopy
 

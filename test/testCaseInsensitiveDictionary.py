@@ -302,7 +302,12 @@ class Test(unittest.TestCase):
         self.assertFalse(4 in key_list)
 
     def test_key_with_binary_transfer_option(self):
-        value = {'YmluYXJ5Cg==', }  # `echo "binary" | base64`
+        value = [
+            {
+                'encoded': 'YmluYXJ5Cg==',  # `echo "binary" | base64`
+                'encoding': 'base64',
+            },
+        ]
         cid = CaseInsensitiveDict()
         cid['userCertificate;binary'] = value
 

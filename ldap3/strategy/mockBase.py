@@ -262,14 +262,18 @@ class MockBaseStrategy(object):
     def entries_from_json(self, json_entry_file):
         target = open(json_entry_file, 'r')
         definition = json.load(target, object_hook=json_hook)
-        if 'entries' not in definition:
+        self.entries_from_dict(definition)
+        target.close()
+
+    def entries_from_dict(self, dict_entries):
+        if 'entries' not in dict_entries:
             self.connection.last_error = 'invalid JSON definition, missing "entries" section'
             if log_enabled(ERROR):
                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             raise LDAPDefinitionError(self.connection.last_error)
         if not self.connection.server.dit:
             self.connection.server.dit = CaseInsensitiveDict()
-        for entry in definition['entries']:
+        for entry in dict_entries['entries']:
             if 'raw' not in entry:
                 self.connection.last_error = 'invalid JSON definition, missing "raw" section'
                 if log_enabled(ERROR):
@@ -281,7 +285,6 @@ class MockBaseStrategy(object):
                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                 raise LDAPDefinitionError(self.connection.last_error)
             self.add_entry(entry['dn'], entry['raw'], validate=False)
-        target.close()
 
     def mock_bind(self, request_message, controls):
         # BindRequest ::= [APPLICATION 0] SEQUENCE {

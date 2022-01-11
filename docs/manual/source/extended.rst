@@ -3,7 +3,7 @@ The EXTENDED operation
 
 The **Extended** operation allows a client to request an operation that may not be defined in the current RFCs but is available on the server.
 
-To perform a Compare operation you must specify the *name* of the extended operation (defined with an OID) and the value to be sent.
+To perform an Extended operation you must specify the *name* of the extended operation (defined with an OID) and the value to be sent.
 
 In the ldap3 library the signature for the Extended operation is::
 

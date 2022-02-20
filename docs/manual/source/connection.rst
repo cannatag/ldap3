@@ -376,6 +376,8 @@ There are some standard formatters defined in the library, most of them are defi
 
 * format_time  # returns a datetime object (with properly defined timezone, or UTC if timezone is not specified) as defined in RFC 4517
 
+* format_postal  # returns a postal address formatted as a string as defined in RFC 4517
+
 You can even define your custom formatter for specific purposes. Just pass a dictionary in the format {'identifier': callable}
 in the 'formatter' parameter of the Server object. The callable must be able to receive a bytes value and convert it to the relevant object or class instance.
 

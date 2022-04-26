@@ -132,76 +132,85 @@ class RestartableStrategy(SyncStrategy):
             if log_enabled(ERROR):
                 log(ERROR, '<%s> while restarting <%s>', e, self.connection)
             self._add_exception_to_history(type(e)(str(e)))
-        if not self._restarting:  # machinery for restartable connection
-            self._restarting = True
-            counter = self.restartable_tries
-            while counter > 0:
-                if log_enabled(BASIC):
-                    log(BASIC, 'try #%d to send in Restartable connection <%s>', self.restartable_tries - counter, self.connection)
-                sleep(self.restartable_sleep_time)
-                if not self.connection.closed:
-                    try:  # resetting connection
-                        self.connection.unbind()
-                    except (socket.error, LDAPSocketOpenError):  # don't trace socket errors because socket could already be closed
-                        pass
-                    except Exception as e:
-                        if log_enabled(ERROR):
-                            log(ERROR, '<%s> while restarting <%s>', e, self.connection)
-                        self._add_exception_to_history(type(e)(str(e)))
-                failure = False
-                try:  # reopening connection
-                    self.connection.open(reset_usage=False, read_server_info=False)
+            if self._restarting:
+                raise e from None
+
+        # machinery for restartable connection
+        self._restarting = True
+        reconnected, result = self._handle_connection_restart(message_type, request, controls)
+        if reconnected:
+            return result
+        self._restarting = False
+
+        self.connection.last_error = 'restartable connection failed to send'
+        if log_enabled(ERROR):
+            log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+        raise LDAPMaximumRetriesError(self.connection.last_error, self.exception_history, self.restartable_tries)
+
+    def _handle_connection_restart(self, message_type, request, controls):
+        counter = self.restartable_tries
+        while counter > 0:
+            if log_enabled(BASIC):
+                log(BASIC, 'try #%d to send in Restartable connection <%s>', self.restartable_tries - counter, self.connection)
+            sleep(self.restartable_sleep_time)
+            if not self.connection.closed:
+                try:  # resetting connection
+                    self.connection.unbind()
+                except (socket.error, LDAPSocketOpenError):  # don't trace socket errors because socket could already be closed
+                    pass
+                except Exception as e:
+                    if log_enabled(ERROR):
+                        log(ERROR, '<%s> while restarting <%s>', e, self.connection)
+                    self._add_exception_to_history(type(e)(str(e)))
+            failure = False
+            try:  # reopening connection
+                self.connection.open(reset_usage=False, read_server_info=False)
                     # restart tls if start_tls was previously used and the current server isn't using LDAPS.
                     # a serverpool might mix LDAPS servers and StartTLS servers, so only initiate a startTLS op
                     # if the current server isn't already using LDAPS
-                    if self._restart_tls and self.connection.server.ssl and log_enabled(BASIC):
-                        log(BASIC, 'Not restarting tls with StartTLS in restartable connection because LDAPS '
+                if self._restart_tls and self.connection.server.ssl and log_enabled(BASIC):
+                    log(BASIC, 'Not restarting tls with StartTLS in restartable connection because LDAPS '
                                    'is in use for current server, and started on connection opening')
-                    if self._restart_tls and not self.connection.server.ssl:
-                        if not self.connection.start_tls(read_server_info=False):
-                            error = 'restart tls in restartable not successful' + (' - ' + self.connection.last_error if self.connection.last_error else '')
-                            if log_enabled(ERROR):
-                                log(ERROR, '%s for <%s>', error, self)
-                            self.connection.unbind()
-                            raise LDAPStartTLSError(error)
-                    if message_type != 'bindRequest':
-                        self.connection.bind(read_server_info=False, controls=self._last_bind_controls)  # binds with previously used controls unless the request is already a bindRequest
-                    if not self.connection.server.schema and not self.connection.server.info:
-                        self.connection.refresh_server_info()
-                    else:
-                        self.connection._fire_deferred(read_info=False)   # in case of lazy connection, not open by the refresh_server_info
+                if self._restart_tls and not self.connection.server.ssl:
+                    if not self.connection.start_tls(read_server_info=False):
+                        error = 'restart tls in restartable not successful' + (' - ' + self.connection.last_error if self.connection.last_error else '')
+                        if log_enabled(ERROR):
+                            log(ERROR, '%s for <%s>', error, self)
+                        self.connection.unbind()
+                        raise LDAPStartTLSError(error)
+                if message_type != 'bindRequest':
+                    self.connection.bind(read_server_info=False, controls=self._last_bind_controls)  # binds with previously used controls unless the request is already a bindRequest
+                if not self.connection.server.schema and not self.connection.server.info:
+                    self.connection.refresh_server_info()
+                else:
+                    self.connection._fire_deferred(read_info=False)   # in case of lazy connection, not open by the refresh_server_info
+            except Exception as e:
+                if log_enabled(ERROR):
+                    log(ERROR, '<%s> while restarting <%s>', e, self.connection)
+                self._add_exception_to_history(type(e)(str(e)))
+                failure = True
+
+            if not failure:
+                try:  # reissuing same operation
+                    ret_value = self.connection.send(message_type, request, controls)
+                    if self.connection.usage:
+                        self.connection._usage.restartable_successes += 1
+                    self._restarting = False
+                    self._reset_exception_history()
+                    return True, ret_value  # successful send
                 except Exception as e:
                     if log_enabled(ERROR):
                         log(ERROR, '<%s> while restarting <%s>', e, self.connection)
                     self._add_exception_to_history(type(e)(str(e)))
                     failure = True
 
-                if not failure:
-                    try:  # reissuing same operation
-                        ret_value = self.connection.send(message_type, request, controls)
-                        if self.connection.usage:
-                            self.connection._usage.restartable_successes += 1
-                        self._restarting = False
-                        self._reset_exception_history()
-                        return ret_value  # successful send
-                    except Exception as e:
-                        if log_enabled(ERROR):
-                            log(ERROR, '<%s> while restarting <%s>', e, self.connection)
-                        self._add_exception_to_history(type(e)(str(e)))
-                        failure = True
+            if failure and self.connection.usage:
+                self.connection._usage.restartable_failures += 1
 
-                if failure and self.connection.usage:
-                    self.connection._usage.restartable_failures += 1
-
-                if not isinstance(self.restartable_tries, bool):
-                    counter -= 1
-
-            self._restarting = False
-
-        self.connection.last_error = 'restartable connection failed to send'
-        if log_enabled(ERROR):
-            log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
-        raise LDAPMaximumRetriesError(self.connection.last_error, self.exception_history, self.restartable_tries)
+            if not isinstance(self.restartable_tries, bool):
+                counter -= 1
+        
+        return False, None # failed to reconnect
 
     def post_send_single_response(self, message_id):
         try:

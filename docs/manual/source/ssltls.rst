@@ -116,7 +116,8 @@ Using certificate authentication with Microsoft Active Directory
 
 Microsoft provides two ways to use certificate authentication within an Active Directory environment as described in the documentation: https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/8e73932f-70cf-46d6-88b1-8d9f86235e81.
 
-If you use an implicit TLS connection (i.e., on the port 636), then the connection is considered to be immediately authenticated (bound) as the credentials represented by the client certificate. Thus you have to use the function ``open()`` instead of ``bind()``::
+If you use an implicit TLS connection (i.e., on the port 636), then the connection is considered to be immediately authenticated (bound) as 
+the credentials represented by the client certificate. Thus you have to use the function ``open()`` instead of ``bind()``::
 
      import ldap3
      tls = ldap3.Tls(local_private_key_file='user.key',local_certificate_file='user.crt')
@@ -125,11 +126,18 @@ If you use an implicit TLS connection (i.e., on the port 636), then the connecti
      ldap_connection.open()
      print(ldap_connection.extend.standard.who_am_i())
 
-If you use an explicit TLS connection (via StartTLS), you have to use the EXTERNAL mechanism and set the ``auto_bind`` parameter of the ``Connection`` object to ``AUTO_BIND_TLS_BEFORE_BIND``::
+If you use an explicit TLS connection (via StartTLS), you have to use the EXTERNAL mechanism and set the ``auto_bind`` parameter of 
+the ``Connection`` object to ``AUTO_BIND_TLS_BEFORE_BIND``::
 
      import ldap3
      tls = ldap3.Tls(local_private_key_file='user.key',local_certificate_file='user.crt')
      ldap_server = ldap3.Server('servername', port=389, tls=tls)
      ldap_connection = ldap3.Connection(ldap_server, authentication=ldap3.SASL, sasl_mechanism=ldap3.EXTERNAL, auto_bind=ldap3.AUTO_BIND_TLS_BEFORE_BIND)
      print(ldap_connection.extend.standard.who_am_i())
+
+According to the documentation, Active Directory also implements "explicit assertion" as defined in the RFC2830 but only when using StartTLS. 
+The ``authzId`` field must contains the distinguished name of the object (prefixed with ``dn:``) associated with the credentials represented by the certificate::
+
+    ldap_connection = ldap3.Connection(ldap_server, authentication=ldap3.SASL, sasl_mechanism=ldap3.EXTERNAL, auto_bind=ldap3.AUTO_BIND_TLS_BEFORE_BIND, 
+                                        sasl_credentials='dn:CN=John Doe,CN=Users,DC=contoso,DC=com')
 

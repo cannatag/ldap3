@@ -872,10 +872,13 @@ class BaseStrategy(object):
                 # If we are using DIGEST-MD5 and LDAP signing is enabled: add a signature to the message
                 sec_num = self.connection._digest_md5_sec_num  # added underscore GC
                 kic = self.connection._digest_md5_kic  # lowercase GC
-
-                # RFC 2831 : encoded_message = sizeOf(encored_message + signature + 0x0001 + secNum) + encoded_message + signature + 0x0001 + secNum
                 signature = bytes.fromhex(md5_hmac(kic, int(sec_num).to_bytes(4, 'big') + encoded_message)[0:20])
-                encoded_message = int(len(encoded_message) + 4 + 2 + 10).to_bytes(4, 'big') + encoded_message + signature + int(1).to_bytes(2, 'big') + int(sec_num).to_bytes(4, 'big')
+                payload = encoded_message + signature
+                if self.connection._digest_md5_kcc_cipher:
+                    payload = self.connection._digest_md5_kcc_cipher.encrypt(payload)
+                # RFC 2831 sign: encoded_message = sizeOf(encoded_message + signature + 0x0001 + secNum) + encoded_message + signature + 0x0001 + secNum
+                # RFC 2831 encrypt: encoded_message = sizeOf(ciphertext + 0x0001 +secNum) + CIPHER(encoded_message + pad + signature) + 0x0001 + secNum
+                encoded_message = int(len(payload) + 2 + 4).to_bytes(4, 'big') + payload + int(1).to_bytes(2, 'big') + int(sec_num).to_bytes(4, 'big')
                 self.connection._digest_md5_sec_num += 1
 
             self.connection.socket.sendall(encoded_message)

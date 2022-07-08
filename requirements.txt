@@ -1,1 +1,2 @@
 pyasn1>=0.4.6
+pycryptodomex

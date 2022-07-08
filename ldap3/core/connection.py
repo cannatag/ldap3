@@ -288,6 +288,8 @@ class Connection(object):
             self.auto_encode = auto_encode
             self._digest_md5_kic = None
             self._digest_md5_kis = None
+            self._digest_md5_kcc_cipher = None
+            self._digest_md5_kcs_cipher = None
             self._digest_md5_sec_num = 0
 
             port_err = check_port_and_port_list(source_port, source_port_list)

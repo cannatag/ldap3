@@ -102,13 +102,17 @@ class AsyncStrategy(BaseStrategy):
                                 # When the LDAP response is splitted accross multiple TCP packets, the SASL buffer length is equal to the MTU of each packet..Which is usually not equal to self.socket_size
                                 # This means that the end of one SASL packet/beginning of one other....could be located in the middle of data
                                 # We are using "sasl_received_data" instead of "data" & "unprocessed" for this reason
+                                sasl_next_packet = sasl_received_data[sasl_buffer_length:]  # the last "data" variable may contain another sasl packet. We'll process it at the next iteration.
 
                                 # structure of messages when LDAP signing is enabled : sizeOf(encoded_message + signature + 0x0001 + secNum) + encoded_message + signature + 0x0001 + secNum
-                                sasl_signature = sasl_received_data[sasl_buffer_length - 16:sasl_buffer_length - 6]
                                 sasl_sec_num = sasl_received_data[sasl_buffer_length - 4:sasl_buffer_length]
-                                sasl_next_packet = sasl_received_data[sasl_buffer_length:]  # the last "data" variable may contain another sasl packet. We'll process it at the next iteration.
-                                sasl_received_data = sasl_received_data[:sasl_buffer_length - 16]  # remove signature + 0x0001 + secNum + the next packet if any, from sasl_received_data
-
+                                sasl_received_data = sasl_received_data[:sasl_buffer_length-6] # Removing secNum and the message type number to fit also encryption
+                                sasl_buffer_length = len(sasl_received_data) # We can do that because len(ciphertext) == len(plaintext) for RC4
+                                if self.connection._digest_md5_kcs_cipher:
+                                    # structure of messages when LDAP encryption is enabled: sizeOf(ciphertext + 0x0001 + secNum) + CIPHER(encoded_message + pad+ signature) + 0x0001 + secNum
+                                    sasl_received_data = self.connection._digest_md5_kcs_cipher.decrypt(sasl_received_data)
+                                sasl_signature = sasl_received_data[sasl_buffer_length - 10:]
+                                sasl_received_data = sasl_received_data[:sasl_buffer_length - 10]  # retrieve encoded_message
                                 kis = self.connection._digest_md5_kis  # renamed to lowercase GC
                                 calculated_signature = bytes.fromhex(md5_hmac(kis, sasl_sec_num + sasl_received_data)[0:20])
                                 if sasl_signature != calculated_signature:

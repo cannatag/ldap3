@@ -37,6 +37,10 @@ DIGEST_MD5 = 'DIGEST-MD5'
 KERBEROS = GSSAPI = 'GSSAPI'
 PLAIN = 'PLAIN'
 
+# SESSION SECURITY
+SIGN = 'sign'
+ENCRYPT = 'ENCRYPT'
+
 AUTO_BIND_DEFAULT = 'DEFAULT'  # binds connection when using "with" context manager
 AUTO_BIND_NONE = 'NONE'  # same as False, no bind is performed
 AUTO_BIND_NO_TLS = 'NO_TLS'  # same as True, bind is performed without tls

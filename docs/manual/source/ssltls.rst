@@ -96,7 +96,7 @@ for 'realm', 'authz_id' and 'enable_protection' if not used::
     from ldap3 import Server, Connection, SASL, DIGEST_MD5
     server = Server(host = test_server, port = test_port)
     c = Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = SASL,
-                             sasl_mechanism = DIGEST_MD5, sasl_credentials = (None, 'username', 'password', None, 'encrypt'))
+                             sasl_mechanism = DIGEST_MD5, sasl_credentials = (None, 'username', 'password', None, ENCRYPT))
 
 Username is not required to be an LDAP entry, but it can be any identifier recognized by the server (i.e. email, principal, ...). If
 you pass None as 'realm' the default realm of the LDAP server will be used.
@@ -107,8 +107,8 @@ LDAP signing is a way to prevent replay attacks without encrypting the LDAP traf
 an Active Directory server : https://support.microsoft.com/en-us/help/4520412/2020-ldap-channel-binding-and-ldap-signing-requirements-for-windows
 LDAP encryption is a way to prevent eavesdropping, it is especially useful to send/receive sensitive data (e.g password change for a user). Active Directory supports Digest-MD5 encryption : https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/a98c1f56-8246-4212-8c4e-d92da1a9563b.
 
-* When ``enable_protection`` is set to 'sign', LDAP requests are signed and signature of LDAP responses is verified.
-* When ``enable_protection`` is set to 'encrypt', LDAP requests are encrypted and LDAP responses are decrypted and their signature is verified.
+* When ``enable_protection`` is set to SIGN, LDAP requests are signed and signature of LDAP responses is verified.
+* When ``enable_protection`` is set to ENCRYPT, LDAP requests are encrypted and LDAP responses are decrypted and their signature is verified.
 * When ``enable_protection`` is set to any other value or not set, LDAP requests are not signed.
 
 **Using DIGEST-MD5 is considered deprecated (RFC6331, July 2011) and should not be used.**

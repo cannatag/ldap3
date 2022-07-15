@@ -41,6 +41,7 @@ except Exception:
     oem_encoding = 'utf-8'
 
 from ..protocol.formatters.formatters import format_ad_timestamp
+from ..core.exceptions import LDAPSignatureVerificationFailedError
 
 NTLM_SIGNATURE = b'NTLMSSP\x00'
 NTLM_MESSAGE_TYPE_NTLM_NEGOTIATE = 1
@@ -125,6 +126,8 @@ AV_FLAG_TYPES = [AV_FLAG_CONSTRAINED,
                  AV_FLAG_INTEGRITY,
                  AV_FLAG_TARGET_SPN_UNTRUSTED]
 
+CLIENT = 'CLIENT'
+SERVER = 'SERVER'
 
 def pack_windows_version(debug=False):
     if debug:
@@ -185,9 +188,9 @@ class NtlmClient(object):
         self.client_require_128_bit_encryption = None
         self.max_life_time = None
         self.client_signing_key = None
-        self.client_sealing_key = None
-        self.sequence_number = None
-        self.server_sealing_key = None
+        self.client_handle = None
+        self.sequence_number = 0
+        self.server_handle = None
         self.server_signing_key = None
         self.integrity = False
         self.replay_detect = False
@@ -273,14 +276,16 @@ class NtlmClient(object):
         Microsoft MS-NLMP 2.2.1.1
         """
         self.reset_client_flags()
-        self.set_client_flag([FLAG_REQUEST_TARGET,
-                              FLAG_NEGOTIATE_56,
+        client_flag = [FLAG_REQUEST_TARGET,
                               FLAG_NEGOTIATE_128,
                               FLAG_NEGOTIATE_NTLM,
                               FLAG_NEGOTIATE_ALWAYS_SIGN,
                               FLAG_NEGOTIATE_OEM,
                               FLAG_NEGOTIATE_UNICODE,
-                              FLAG_NEGOTIATE_EXTENDED_SESSIONSECURITY])
+                              FLAG_NEGOTIATE_EXTENDED_SESSIONSECURITY]
+        if self.confidentiality:
+            client_flag.append(FLAG_NEGOTIATE_SEAL)
+        self.set_client_flag(client_flag)
 
         message = NTLM_SIGNATURE  # 8 bytes
         message += pack('<I', NTLM_MESSAGE_TYPE_NTLM_NEGOTIATE)  # 4 bytes
@@ -392,6 +397,7 @@ class NtlmClient(object):
             workstation = b''
         message += self.pack_field(workstation, pos)  # empty WorkstationField field  # 8 bytes
         pos += len(workstation)
+        # E
         encrypted_random_session_key = b''
         message += self.pack_field(encrypted_random_session_key, pos)  # EncryptedRandomSessionKeyField field  # 8 bytes
         pos += len(encrypted_random_session_key)
@@ -485,6 +491,10 @@ class NtlmClient(object):
         response_key_nt = self.ntowf_v2()
         nt_proof_str = hmac.new(response_key_nt, self.server_challenge + temp, digestmod=hashlib.md5).digest()
         nt_challenge_response = nt_proof_str + temp
+        if self.confidentiality:
+            self.exported_session_key = self._kxkey(response_key_nt, nt_proof_str)
+            self._sealkey()
+            self._signkey()
         return nt_challenge_response
 
     def ntowf_v2(self):
@@ -503,3 +513,47 @@ class NtlmClient(object):
                     raise e  # raise original exception
 
         return hmac.new(password_digest, (self.user_name.upper() + self.user_domain).encode('utf-16-le'), digestmod=hashlib.md5).digest()
+
+    def _kxkey(self, response_key_nt, nt_proof_str):
+        # SessionBaseKey for NTLM v2 Authentication: https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/5e550938-91d4-459f-b67d-75d70009e3f3
+        session_base_key = hmac.new(response_key_nt, nt_proof_str, digestmod=hashlib.md5).digest()
+        # KeyExchangeKey for NTLM v2: https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/d86303b5-b29e-4fb9-b119-77579c761370
+        return session_base_key
+
+    # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/bf39181d-e95d-40d7-a740-ab4ec3dc363d
+    def _sealkey(self):
+        from Cryptodome.Cipher import ARC4
+        client_sealing_key = hashlib.new('MD5', self.exported_session_key + b'session key to client-to-server sealing key magic constant\x00').digest()
+        server_sealing_key = hashlib.new('MD5', self.exported_session_key + b'session key to server-to-client sealing key magic constant\x00').digest()
+        self.client_handle = ARC4.new(client_sealing_key)
+        self.server_handle = ARC4.new(server_sealing_key)
+
+    # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/524cdccb-563e-4793-92b0-7bc321fce096
+    def _signkey(self):
+        self.client_signing_key = hashlib.new('MD5', self.exported_session_key + b'session key to client-to-server signing key magic constant\x00').digest()
+        self.server_signing_key = hashlib.new('MD5', self.exported_session_key + b'session key to server-to-client signing key magic constant\x00').digest()
+
+    # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/a92716d5-d164-4960-9e15-300f4eef44a8
+    def sign(self, message, seqnum, side=CLIENT):
+        signing_key = None
+        if side == CLIENT:
+            signing_key = self.client_signing_key
+        else:
+            signing_key = self.server_signing_key
+        
+        version = pack("<I", 1)
+        checksum = hmac.new(signing_key, seqnum + message, digestmod=hashlib.md5).digest()[:8]
+        return version + checksum + seqnum
+    
+    # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/a92716d5-d164-4960-9e15-300f4eef44a8
+    def seal(self, message):
+        payload = self.sign(message, pack("<I", self.sequence_number)) + self.client_handle.encrypt(message)
+        self.sequence_number += 1
+        return payload
+
+    def unseal(self, sealed_message):
+        message = self.server_handle.decrypt(sealed_message[16:])
+        calculated_signature = self.sign(message, sealed_message[12:16], SERVER)
+        if calculated_signature != sealed_message[:16]:
+            raise LDAPSignatureVerificationFailedError("Signature verification failed for the received LDAP message number " + str(self.sequence_number) + ". Expected signature " + sealed_message[:16].hex() + " but got " + calculated_signature.hex() + ".")
+        return message

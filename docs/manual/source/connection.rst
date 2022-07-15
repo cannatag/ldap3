@@ -56,6 +56,8 @@ Connection parameters are:
 
 * password: the password of the user for simple bind (defaults to None)
 
+* session_security: the session security to provide if the authentication protocol supports it. Can be ENCRYPT
+
 * auto_bind: automatically opens and binds the connection. Can be AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_TLS_BEFORE_BIND.
 
 * version: LDAP protocol version (defaults to 3).

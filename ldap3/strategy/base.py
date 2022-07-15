@@ -34,7 +34,7 @@ from struct import pack
 from platform import system
 from random import choice
 
-from .. import SYNC, ANONYMOUS, get_config_parameter, BASE, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES, DIGEST_MD5
+from .. import SYNC, ANONYMOUS, get_config_parameter, BASE, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES, DIGEST_MD5, ENCRYPT
 from ..core.results import DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, LDAPStartTLSError, \
@@ -880,6 +880,10 @@ class BaseStrategy(object):
                 # RFC 2831 encrypt: encoded_message = sizeOf(ciphertext + 0x0001 +secNum) + CIPHER(encoded_message + pad + signature) + 0x0001 + secNum
                 encoded_message = int(len(payload) + 2 + 4).to_bytes(4, 'big') + payload + int(1).to_bytes(2, 'big') + int(sec_num).to_bytes(4, 'big')
                 self.connection._digest_md5_sec_num += 1
+            elif self.connection.session_security == ENCRYPT and not self.connection.sasl_in_progress:
+                # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/115f9c7d-bc30-4262-ae96-254555c14ea6
+                encoded_message = self.connection.ntlm_client.seal(encoded_message)
+                encoded_message = int(len(encoded_message)).to_bytes(4, 'big') + encoded_message
 
             self.connection.socket.sendall(encoded_message)
             if log_enabled(EXTENDED):

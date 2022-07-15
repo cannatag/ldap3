@@ -29,7 +29,7 @@ import hmac
 
 from Cryptodome.Cipher import ARC4
 
-from ... import SEQUENCE_TYPES
+from ... import SEQUENCE_TYPES, ENCRYPT, SIGN
 from ...protocol.sasl.sasl import abort_sasl_negotiation, send_sasl_negotiation, random_hex_string
 from ...core.exceptions import LDAPSASLBindInProgressError
 
@@ -99,9 +99,9 @@ def sasl_digest_md5(connection, controls):
     qop = b'auth'
     if len(connection.sasl_credentials) == 5 and not connection.server.ssl:
         connection._digest_md5_sec_num = 0
-        if connection.sasl_credentials[4] == 'sign':
+        if connection.sasl_credentials[4] == SIGN:
             qop = b'auth-int'
-        elif connection.sasl_credentials[4] == 'encrypt':
+        elif connection.sasl_credentials[4] == ENCRYPT:
             for c in supported_ciphers:
                 if c in server_directives['cipher']:
                     cipher = c.encode(charset)

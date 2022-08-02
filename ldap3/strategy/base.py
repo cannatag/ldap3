@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-import socket
+import socket, base64
 try:  # try to discover if unix sockets are available for LDAP over IPC (ldapi:// scheme)
     # noinspection PyUnresolvedReferences
     from socket import AF_UNIX
@@ -34,7 +34,7 @@ from struct import pack
 from platform import system
 from random import choice
 
-from .. import SYNC, ANONYMOUS, get_config_parameter, BASE, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES, DIGEST_MD5, ENCRYPT
+from .. import SYNC, ANONYMOUS, get_config_parameter, BASE, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES, DIGEST_MD5, ENCRYPT, NTLM, GSSAPI
 from ..core.results import DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, LDAPStartTLSError, \
@@ -63,6 +63,7 @@ from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTEN
 from ..utils.asn1 import encode, decoder, ldap_result_to_dict_fast, decode_sequence
 from ..utils.conv import to_unicode
 from ..protocol.sasl.digestMd5 import md5_h, md5_hmac
+from ..protocol.sasl.kerberos import posix_gssapi_unavailable
 
 SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'
 TRANSACTION_ERROR = 'TRANSACTION_ERROR'
@@ -881,8 +882,16 @@ class BaseStrategy(object):
                 encoded_message = int(len(payload) + 2 + 4).to_bytes(4, 'big') + payload + int(1).to_bytes(2, 'big') + int(sec_num).to_bytes(4, 'big')
                 self.connection._digest_md5_sec_num += 1
             elif self.connection.session_security == ENCRYPT and not self.connection.sasl_in_progress:
-                # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/115f9c7d-bc30-4262-ae96-254555c14ea6
-                encoded_message = self.connection.ntlm_client.seal(encoded_message)
+                if self.connection.authentication == NTLM:
+                    # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/115f9c7d-bc30-4262-ae96-254555c14ea6
+                    encoded_message = self.connection.ntlm_client.seal(encoded_message)
+                elif self.connection.sasl_mechanism == GSSAPI:
+                    if posix_gssapi_unavailable:
+                        import winkerberos
+                        winkerberos.authGSSClientWrap(self.connection.krb_ctx, base64.b64encode(encoded_message).decode('utf-8'), None, 1)
+                        encoded_message = base64.b64decode(winkerberos.authGSSClientResponse(self.connection.krb_ctx))
+                    else:
+                        encoded_message = self.connection.krb_ctx.wrap(encoded_message, True).message
                 encoded_message = int(len(encoded_message)).to_bytes(4, 'big') + encoded_message
 
             self.connection.socket.sendall(encoded_message)

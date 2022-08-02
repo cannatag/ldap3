@@ -243,13 +243,6 @@ class Connection(object):
                     log(ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
-            if session_security and not self.authentication == NTLM:
-                self.last_error = '"session_security" option only available for NTLM'
-                if log_enabled(ERROR):
-                    log(ERROR, '%s for <%s>', self.last_error, self)
-                raise LDAPInvalidValueError(self.last_error)
-            self.session_security = session_security
-
             self.version = version
             self.auto_referrals = True if auto_referrals else False
             self.request = None
@@ -301,7 +294,15 @@ class Connection(object):
             self._digest_md5_kcc_cipher = None
             self._digest_md5_kcs_cipher = None
             self._digest_md5_sec_num = 0
+            self.krb_ctx = None
 
+            if session_security and not (self.authentication == NTLM or self.sasl_mechanism == GSSAPI):
+                self.last_error = '"session_security" option only available for NTLM and GSSAPI'
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', self.last_error, self)
+                raise LDAPInvalidValueError(self.last_error)
+            self.session_security = session_security
+            
             port_err = check_port_and_port_list(source_port, source_port_list)
             if port_err:
                 if log_enabled(ERROR):

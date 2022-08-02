@@ -225,15 +225,18 @@ or pass an appropriate value of the ``ReverseDnsSetting`` enum as the first elem
 
 
 .. note::
-   `ldap3` does not currently support any SASL data security layers, only authentication.
+   `ldap3` currently support SASL authentication and data security layers for encryption.
    
-   If your server requries a string Security Strength Factor (SSF), you may receive
+   If your server requires a string Security Strength Factor (SSF), you must enable data security layers using ``session_security=ENCRYPT``.
+   
+   from ldap3 import KERBEROS, ENCRYPT, Connection
+   c = Connection(
+        server, authentication=SASL, sasl_mechanism=KERBEROS, session_security=ENCRYPT)
+
+Plainmay receive
    an ``LDAPStrongerAuthRequiredResult`` error when binding, e.g.:
    
        SASL:[GSSAPI]: Sign or Seal are required.
-  
-
-Plain
 ^^^^^
 The PLAIN SASL mechanism sends data in clear text, so it must rely on other means of securing the connection between the client and the LDAP server.
 As stated in RFC4616 the PLAIN mechanism should not be used without adequate data security protection as this mechanism affords no integrity or confidentiality

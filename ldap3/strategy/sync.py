@@ -23,15 +23,16 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-import socket
+import socket, base64
 
-from .. import SEQUENCE_TYPES, get_config_parameter, DIGEST_MD5, NTLM, ENCRYPT
+from .. import SEQUENCE_TYPES, get_config_parameter, DIGEST_MD5, NTLM, ENCRYPT, GSSAPI
 from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, LDAPOperationResult, LDAPSignatureVerificationFailedError
 from ..strategy.base import BaseStrategy, SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, TRANSACTION_ERROR
 from ..protocol.rfc4511 import LDAPMessage
 from ..utils.log import log, log_enabled, ERROR, NETWORK, EXTENDED, format_ldap_message
 from ..utils.asn1 import decoder, decode_message_fast
 from ..protocol.sasl.digestMd5 import md5_hmac
+from ..protocol.sasl.kerberos import posix_gssapi_unavailable
 
 LDAP_MESSAGE_TEMPLATE = LDAPMessage()
 
@@ -134,6 +135,14 @@ class SyncStrategy(BaseStrategy):
  
                         elif self.connection.authentication == NTLM:
                             sasl_received_data = self.connection.ntlm_client.unseal(sasl_received_data[:sasl_buffer_length])
+                        
+                        elif self.connection.sasl_mechanism == GSSAPI:
+                            if posix_gssapi_unavailable:
+                                import winkerberos
+                                winkerberos.authGSSClientUnwrap(self.connection.krb_ctx, base64.b64encode(sasl_received_data[:sasl_buffer_length]).decode('utf-8'))
+                                sasl_received_data = base64.b64decode(winkerberos.authGSSClientResponse(self.connection.krb_ctx))
+                            else:
+                                sasl_received_data = self.connection.krb_ctx.unwrap(sasl_received_data[:sasl_buffer_length]).message
                         
                         sasl_total_bytes_received = 0
                         unprocessed += sasl_received_data

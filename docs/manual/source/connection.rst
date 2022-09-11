@@ -330,7 +330,7 @@ You can check the result value to know if the operation has been sucessful. The 
 
 * message: a diagnostic message sent by the server (optional)
 
-* dn: a distinguish name of an entry related to the request (optional)
+* dn: a distinguished name of an entry related to the request (optional)
 
 * referrals: a list of referrals where the operation can be continued (optional)
 

@@ -75,7 +75,7 @@ The LDAP server store *operational* information on each entry. This information 
 available to the user via an **operational attribute** that can usually be read but not written.
 
 To request all operational attribute in a search you can use the ``+`` (PLUS) character as an attribute name. Keep in mind that the server
-may not return some operational attribute if they are not explicitly requested (because they may take a long time or many resources to be computed),
+may not return some operational attributes if they are not explicitly requested (because they may take a long time or many resources to be computed),
 so if you need a specific attribute is better to request it explicitly.
 
 Some server may not return attribute information in the schema. In this case the ldap3 library is not aware of them. This can lead to some erratic

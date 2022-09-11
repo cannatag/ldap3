@@ -68,7 +68,7 @@ Library errors
 --------------
 
 You can deal with errors in two different ways. By default in synchronous strategies each LDAP operation returns a
-True/False value that specify if the operation has been successful or not. In case of failures you can check the
+True/False value that specifies if the operation has been successful or not. In case of failures you can check the
 error description in the ```last_error``` attribute of the Connection object. In some cases an exception of the custom
 hierarchy starting from the ```LDAPExceptionError``` class is raised with a description of the error condition in the *args*
 attribute.

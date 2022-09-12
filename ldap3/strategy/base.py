@@ -441,7 +441,7 @@ class BaseStrategy(object):
 
                                     if log_enabled(PROTOCOL):
                                         log(PROTOCOL, 'attribute type <%s> removed in response because of same attribute returned as range by the server in <%s>', attribute_type, self)
-                                except:
+                                except KeyError:
                                     ...
 
             request = self._outstanding.pop(message_id)

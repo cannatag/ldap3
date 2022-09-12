@@ -435,10 +435,14 @@ class BaseStrategy(object):
                                     orig_attr, _, _ = attribute_type.partition(';')
                                     attrs_to_remove.append(orig_attr)
                             for attribute_type in attrs_to_remove:
-                                if log_enabled(PROTOCOL):
-                                    log(PROTOCOL, 'attribute type <%s> removed in response because of same attribute returned as range by the server in <%s>', attribute_type, self)
-                                del entry['raw_attributes'][attribute_type]
-                                del entry['attributes'][attribute_type]
+                                try:
+                                    del entry['raw_attributes'][attribute_type]
+                                    del entry['attributes'][attribute_type]
+
+                                    if log_enabled(PROTOCOL):
+                                        log(PROTOCOL, 'attribute type <%s> removed in response because of same attribute returned as range by the server in <%s>', attribute_type, self)
+                                except:
+                                    ...
 
             request = self._outstanding.pop(message_id)
         else:

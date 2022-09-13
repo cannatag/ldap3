@@ -705,6 +705,11 @@ class Connection(object):
             log(BASIC, 'start (RE)BIND operation via <%s>', self)
         self.last_error = None
         with self.connection_lock:
+            if self.session_security == ENCRYPT or self.self.connection._digest_md5_kcs_cipher:
+                self.last_error = 'Rebind not supported with previous encryption'
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', self.last_error, self)
+                raise LDAPBindError(self.last_error)
             if user:
                 self.user = user
             if password is not None:

@@ -26,9 +26,9 @@ import os
 import glob
 import shutil
 from json import load
+from setuptools import setup
 from distutils.command.clean import clean
 from distutils import log
-from setuptools import setup
 
 version_dict = load(open('_version.json', 'r'))
 version = str(version_dict['version'])

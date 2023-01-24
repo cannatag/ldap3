@@ -1,5 +1,6 @@
 pip
 pyasn1>=0.4.6
+pycryptodome
 setuptools
 sphinx
 sphinx-rtd-theme

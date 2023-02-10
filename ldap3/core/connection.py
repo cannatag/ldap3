@@ -621,7 +621,7 @@ class Connection(object):
                             log(ERROR, '%s for <%s>', self.last_error, self)
                         raise LDAPSASLMechanismNotSupportedError(self.last_error)
                 elif self.authentication == NTLM:
-                    if self.user and self.password and len(self.user.split('\\')) == 2:
+                    if self.user and self.password is not None and len(self.user.split('\\')) == 2:
                         if log_enabled(PROTOCOL):
                             log(PROTOCOL, 'performing NTLM BIND for <%s>', self)
                         if not self.strategy.pooled:

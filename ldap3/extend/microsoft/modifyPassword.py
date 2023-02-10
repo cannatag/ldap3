@@ -37,12 +37,12 @@ def ad_modify_password(connection, user_dn, new_password, old_password, controls
         user_dn = safe_dn(user_dn)
     if str is bytes:  # python2, converts to unicode
         new_password = to_unicode(new_password)
-        if old_password:
+        if old_password is not None:
             old_password = to_unicode(old_password)
 
     encoded_new_password = ('"%s"' % new_password).encode('utf-16-le')
 
-    if old_password:  # normal users must specify old and new password
+    if old_password is not None:  # normal users must specify old and new password
         encoded_old_password = ('"%s"' % old_password).encode('utf-16-le')
         result = connection.modify(user_dn,
                                    {'unicodePwd': [(MODIFY_DELETE, [encoded_old_password]),

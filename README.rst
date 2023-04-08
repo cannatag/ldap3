@@ -28,7 +28,7 @@ interact with the LDAP server in a modern and *pythonic* way. With the Abstracti
 Thread safe strategies
 ----------------------
 
-In multithreaded programs you must use on of **SAFE_SYNC** (synchronous connection strategy), **SAFE_RESTARTABLE** (restartable syncronous connection strategy) or **ASYNC** (asynchronous connection strategy).
+In multithreaded programs you must use one of **SAFE_SYNC** (synchronous connection strategy), **SAFE_RESTARTABLE** (restartable syncronous connection strategy) or **ASYNC** (asynchronous connection strategy).
    Each LDAP operation with SAFE_SYNC or SAFE_RESTARTABLE strategies returns a tuple of four elements: status, result, response and request.
 
    * status: states if the operation was successful

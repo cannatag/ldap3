@@ -79,7 +79,8 @@ class Tls(object):
                  ca_certs_data=None,
                  local_private_key_password=None,
                  ciphers=None,
-                 sni=None):
+                 sni=None,
+                 peer_certificate=None):
         if ssl_options is None:
             ssl_options = []
         self.ssl_options = ssl_options
@@ -239,6 +240,7 @@ class Tls(object):
         if do_handshake and (self.validate == ssl.CERT_REQUIRED or self.validate == ssl.CERT_OPTIONAL):
             check_hostname(wrapped_socket, connection.server.host, self.valid_names)
 
+        self.peer_certificate = wrapped_socket.getpeercert(binary_form=True)
         connection.socket = wrapped_socket
         return
 

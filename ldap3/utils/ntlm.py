@@ -219,6 +219,8 @@ class NtlmClient(object):
         self.current_encoding = None
         self.client_challenge = None
         self.server_target_info_raw = None
+        self.client_av_channel_bindings = None
+        self.tls_channel_binding = None
 
     def get_client_flag(self, flag):
         if not self.client_config_flags:
@@ -451,7 +453,7 @@ class NtlmClient(object):
         # avs is a list of tuples, each tuple is made of av_type and av_value
         info = b''
         for av_type, av_value in avs:
-            if av_type(0) == AV_END_OF_LIST:
+            if av_type == AV_END_OF_LIST:
                 continue
             info += pack('<H', av_type)
             info += pack('<H', len(av_value))
@@ -480,6 +482,13 @@ class NtlmClient(object):
         temp += self.pack_windows_timestamp()  # time - 8 bytes
         temp += self.client_challenge  # random client challenge - 8 bytes
         temp += pack('<I', 0)  # Z(4)
+
+        if self.tls_channel_binding:
+            server_av_pairs_unpack = self.unpack_av_info(self.server_target_info_raw)
+            server_av_pairs_unpack.append((AV_CHANNEL_BINDINGS,self.client_av_channel_bindings))
+            server_av_pairs_pack = self.pack_av_info(server_av_pairs_unpack)
+            self.server_target_info_raw = server_av_pairs_pack
+
         temp += self.server_target_info_raw
         temp += pack('<I', 0)  # Z(4)
         response_key_nt = self.ntowf_v2()

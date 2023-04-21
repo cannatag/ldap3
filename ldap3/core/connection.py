@@ -1382,7 +1382,7 @@ class Connection(object):
                         # The logic here is heavly inspired by "msldap", "minikerberos" and "asysocks" projects by @skelsec.
                         from hashlib import sha256, md5
                         ntlm_client.tls_channel_binding = True
-                        peer_certificate_sh256 = sha256(self.server.tls.peer_certificate).digest()
+                        peer_certificate_sha256 = sha256(self.server.tls.peer_certificate).digest()
 
                         # https://datatracker.ietf.org/doc/html/rfc2744#section-3.11
                         channel_binding_struct = bytes()
@@ -1390,7 +1390,7 @@ class Connection(object):
                         acceptor_address = b'\x00'*8
 
                         # https://datatracker.ietf.org/doc/html/rfc5929#section-4
-                        application_data_raw = b'tls-server-end-point:' + peer_certificate_sh256
+                        application_data_raw = b'tls-server-end-point:' + peer_certificate_sha256
                         len_application_data = len(application_data_raw).to_bytes(4, byteorder='little', signed = False)
                         application_data = len_application_data
                         application_data += application_data_raw

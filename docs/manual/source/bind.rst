@@ -269,6 +269,12 @@ When binding via NTLM, it is also possible to authenticate with an LM:NTLM hash 
 
     c = Connection(s, user="AUTHTEST\\Administrator", password="E52CAC67419A9A224A3B108F3FA6CB6D:8846F7EAEE8FB117AD06BDD830B7586C", authentication=NTLM)
 
+You can enable LDAP Channel Binding over TLS with the argument ``channel_binding=TLS_CHANNEL_BINDING``::
+    c = Connection(s, user="AUTHTEST\\Administrator", password="E52CAC67419A9A224A3B108F3FA6CB6D:8846F7EAEE8FB117AD06BDD830B7586C"
+                    channel_binding=TLS_CHANNEL_BINDING, authentication=NTLM)
+
+This option is only relevant for NTLM authentication done over TLS.
+
 LDAPI (LDAP over IPC)
 ---------------------
 

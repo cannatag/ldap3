@@ -37,13 +37,14 @@ from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT,
 from ldap3.protocol.schemas.edir914 import edir_9_1_4_schema, edir_9_1_4_dsa_info
 from ldap3.protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
 from ldap3.protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
+from ldap3.protocol.schemas.ds389_2_0_17 import ds389_2_0_17_schema, ds389_2_0_17_dsa_info
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
 from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name, set_library_log_activation_level, set_library_log_hide_sensitive_data
 from ldap3 import __version__ as ldap3_version
 from pyasn1 import __version__ as pyasn1_version
 
 test_strategy = getenv('STRATEGY', SYNC)  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
-test_server_type = getenv('SERVER', 'EDIR')  # possible choices: EDIR (NetIQ eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP, NONE (doesn't run test that require an external server)
+test_server_type = getenv('SERVER', 'EDIR')  # possible choices: EDIR (NetIQ eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP, NONE (doesn't run test that require an external server), '389' (Red Hat 389 Directory Server)
 
 test_verbose = True if getenv('VERBOSE', 'TRUE').upper() == 'TRUE' else False
 test_pool_size = 5
@@ -72,6 +73,7 @@ test_user_password = 'Rc2597pfop'  # default password for users created in tests
 # test_lazy_connection = True
 # test_check_names = False
 # test_internal_decoder = False
+test_server_type = '389'
 
 test_validator = {}
 try:
@@ -217,7 +219,6 @@ if 'TRAVIS' in location:
         test_valid_names = [None]
     else:
         raise NotImplementedError('Cloud lab not implemented for ' + test_server_type)
-
 elif location == 'ELITE10GC-EDIR':
     # test notebook - eDirectory (EDIR)
     # test_server = ['edir4.hyperv:389',
@@ -253,6 +254,72 @@ elif location == 'ELITE10GC-EDIR':
     test_ntlm_password = 'zzz'
     test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.101', '192.168.137.102', '192.168.137.109']
+elif location == 'GCZFURY-EDIR':
+    # test notebook - eDirectory (EDIR)
+    # test_server = ['edir4.hyperv:389',
+    #                'edir4.hyperv:1389',
+    #                'edir4.hyperv:2389',
+    #                'edir4.hyperv:3389']  # ldap server where tests are executed, if a list is given a pool will be created
+    test_server = 'edir1.hyperv'
+    test_server_type = 'EDIR'
+    test_root_partition = ''
+    test_base = 'ou=fixtures,o=test'  # base context where test objects are created
+    test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
+    test_name_attr = 'cn'  # naming attribute for test objects
+    test_int_attr = 'loginGraceLimit'
+    test_multivalued_attribute = 'givenname'
+    test_singlevalued_attribute = 'generationQualifier'
+    test_server_context = 'o=resources'  # used in novell eDirectory extended operations
+    test_server_edir_name = 'edir4'  # used in novell eDirectory extended operations
+    test_user = 'cn=test_admin_user,ou=bind,o=test'  # the user that performs the tests
+    test_password = 'password1'  # user password
+    test_secondary_user = 'cn=test_bind_user,ou=bind,o=test'
+    test_secondary_password = 'password2'
+    test_sasl_user = 'test_bind_sasl_user.bind.test'
+    test_sasl_password = 'password3'
+    test_sasl_user_dn = 'cn=test_bind_sasl_user,ou=bind,o=test'
+    test_sasl_secondary_user = 'test_bind_sasl2_user.bind.test'
+    test_sasl_secondary_password = 'password4'
+    test_sasl_secondary_user_dn = 'cn=test_bind_sasl2_user,ou=bind,o=test'
+    test_sasl_realm = None
+    test_ca_cert_file = 'local-edir-ca-cert.pem'
+    test_user_cert_file = 'local-edir-test_admin-cert.pem'
+    test_user_key_file = 'local-edir-test_admin-key.pem'
+    test_ntlm_user = 'xxx\\yyy'
+    test_ntlm_password = 'zzz'
+    test_logging_filename = path.join(gettempdir(), 'ldap3.log')
+    test_valid_names = ['192.168.137.101', '192.168.137.102', '192.168.137.109']
+elif location == 'GCZFURY-389':
+    # test notebook - 389 (389)
+    test_server = ['edir1.hyperv:8389']  # ldap server where tests are executed, if a list is given a pool will be created
+    test_server_type = '389'
+    test_root_partition = 'o=LDAP3-LAB'
+    test_base = 'ou=test,' + test_root_partition # base context where test objects are created
+    test_moved = 'ou=moved,ou=test,' + test_root_partition  # base context where objects are moved in ModifyDN operations
+    test_name_attr = 'cn'  # naming attribute for test objects
+    test_int_attr = 'gidNumber'
+    test_multivalued_attribute = 'givenname'
+    test_singlevalued_attribute = 'employeeNumber'
+    test_server_context = ''  # used in novell eDirectory extended operations
+    test_server_edir_name = ''  # used in novell eDirectory extended operations
+    test_user = 'cn=Directory Manager'  # the user that performs the tests
+    test_password = 'password'  # user password
+    test_secondary_user = 'cn=Directory Manager'  # the user that performs the tests
+    test_secondary_password = 'password'  # user password
+    test_sasl_user = 'uid=testSASL,ou=people,' + test_root_partition
+    test_sasl_password = 'password'
+    test_sasl_user_dn = 'uid=testSASL,ou=people,' + test_root_partition
+    test_sasl_secondary_user = 'uid=testSASL,ou=people,' + test_root_partition
+    test_sasl_secondary_password = 'password'
+    test_sasl_secondary_user_dn = 'uid=testSASL,ou=people,' + test_root_partition
+    test_sasl_realm = 'openldap.hyperv'
+    test_ca_cert_file = 'local-openldap-ca-cert.pem'
+    test_user_cert_file = ''
+    test_user_key_file = ''
+    test_ntlm_user = 'xxx\\yyy'
+    test_ntlm_password = 'zzz'
+    test_logging_filename = path.join(gettempdir(), 'ldap3.log')
+    test_valid_names = ['192.168.137.104']
 elif location == 'ELITE10GC-AD-RAAB':
     test_server = 'dc1.lucasraab.me'
     test_server_type = 'AD'
@@ -601,7 +668,10 @@ def get_connection(bind=None,
             schema = SchemaInfo.from_json(slapd_2_4_schema)
             info = DsaInfo.from_json(slapd_2_4_dsa_info, schema)
             server = Server.from_definition('MockSyncServer', info, schema)
-
+        elif test_server_type == '389':
+            schema = SchemaInfo.from_json(ds389_2_0_17_schema)
+            info = DsaInfo.from_json(ds389_2_0_17_dsa_info, schema)
+            server = Server.from_definition('MockSyncServer', info, schema)
     if authentication == SASL:
         connection = Connection(server,
                                 auto_bind=bind,
@@ -768,7 +838,13 @@ def get_add_user_attributes(batch_id, username, password=None, attributes=None):
                            'unicodePwd': ('"%s"' % password).encode('utf-16-le'),
                            'userAccountControl': 512})
     elif test_server_type == 'SLAPD':
-        attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'top'], 'sn': username, 'gidNumber': 0})
+        attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'top'],
+                           'sn': username,
+                           'gidNumber': 0})
+    elif test_server_type == '389':
+        attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'top'],
+                           'sn': username,
+                           'gidNumber': 0})
     else:
         attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
     return attributes

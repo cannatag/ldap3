@@ -158,9 +158,9 @@ Let's start accessing the server with an anonymous bind::
 
 or shorter::
 
-    >>> conn = Connection('ipa.demo1.freeipa.org', auto_bind=True)
+    >>> conn = Connection('ipa.demo1.freeipa.org', auto_bind=AUTO_BIND_NO_TLS)
 
-it could hardly be simpler than this. The ``auto_bind=True`` parameter forces the Bind operation to execute after creating the
+it could hardly be simpler than this. The ``auto_bind=AUTO_BIND_NO_TLS`` parameter forces the Bind operation to execute after creating the
 Connection object. You have now a full working anonymous session open and bound to the server with a *synchronous*
 communication strategy::
 

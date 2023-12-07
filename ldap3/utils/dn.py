@@ -164,7 +164,7 @@ def _split_ava(ava, escape=False, strip=True):
             return attribute_type, attribute_value
         equal = ava.find('=', equal + 1)
 
-    return '', (ava.strip if strip else ava)  # if no equal found return only value
+    return '', (ava.strip() if strip else ava)  # if no equal found return only value
 
 
 def _validate_attribute_type(attribute_type):

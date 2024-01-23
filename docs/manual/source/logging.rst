@@ -1,7 +1,7 @@
 Logging
 #######
 
-ldap3 has an extended logging capability that uses the standard Python logging libray and integrates with the logging
+ldap3 has an extended logging capability that uses the standard Python logging library and integrates with the logging
 facility of the client application.
 
 To enable logging the application must have a working logging configuration that emits logging at the DEBUG level::

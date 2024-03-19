@@ -300,3 +300,22 @@ class Test(unittest.TestCase):
         self.assertFalse('TWO' in key_list)
         self.assertFalse('TWO' in key_list)
         self.assertFalse(4 in key_list)
+
+    def test_key_with_binary_transfer_option(self):
+        value = [
+            {
+                'encoded': 'YmluYXJ5Cg==',  # `echo "binary" | base64`
+                'encoding': 'base64',
+            },
+        ]
+        cid = CaseInsensitiveDict()
+        cid['userCertificate;binary'] = value
+
+        ci_keys = cid._case_insensitive_keymap.keys()
+
+        self.assertTrue('usercertificate' in ci_keys)
+        self.assertFalse('usercertificate;binary' in ci_keys)
+
+        self.assertEqual(cid['userCertificate;binary'], value)
+        self.assertEqual(cid['userCertificate'], value)
+        self.assertEqual(cid['usercertificate'], value)

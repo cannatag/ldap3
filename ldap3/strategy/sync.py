@@ -23,15 +23,16 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-import socket
+import socket, base64
 
-from .. import SEQUENCE_TYPES, get_config_parameter, DIGEST_MD5
+from .. import SEQUENCE_TYPES, get_config_parameter, DIGEST_MD5, NTLM, ENCRYPT, GSSAPI
 from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, LDAPOperationResult, LDAPSignatureVerificationFailedError
 from ..strategy.base import BaseStrategy, SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, TRANSACTION_ERROR
 from ..protocol.rfc4511 import LDAPMessage
 from ..utils.log import log, log_enabled, ERROR, NETWORK, EXTENDED, format_ldap_message
 from ..utils.asn1 import decoder, decode_message_fast
 from ..protocol.sasl.digestMd5 import md5_hmac
+from ..protocol.sasl.kerberos import posix_gssapi_unavailable
 
 LDAP_MESSAGE_TEMPLATE = LDAPMessage()
 
@@ -77,7 +78,7 @@ class SyncStrategy(BaseStrategy):
         data = b''
         get_more_data = True
         # exc = None  # not needed here GC
-        sasl_total_bytes_recieved = 0
+        sasl_total_bytes_received = 0
         sasl_received_data = b''  # used to verify the signature
         sasl_next_packet = b''
         # sasl_signature = b'' # not needed here? GC
@@ -99,7 +100,7 @@ class SyncStrategy(BaseStrategy):
                     raise communication_exception_factory(LDAPSocketReceiveError, type(e)(str(e)))(self.connection.last_error)
 
                 # If we are using DIGEST-MD5 and LDAP signing is set : verify & remove the signature from the message
-                if self.connection.sasl_mechanism == DIGEST_MD5 and self.connection._digest_md5_kis and not self.connection.sasl_in_progress:
+                if (self.connection._digest_md5_kis or self.connection.session_security == ENCRYPT) and not self.connection.sasl_in_progress:
                     data = sasl_next_packet + data
 
                     if sasl_received_data == b'' or sasl_next_packet:
@@ -107,25 +108,43 @@ class SyncStrategy(BaseStrategy):
                         sasl_buffer_length = int.from_bytes(data[0:4], "big")
                         data = data[4:]
                     sasl_next_packet = b''
-                    sasl_total_bytes_recieved += len(data)
+                    sasl_total_bytes_received += len(data)
                     sasl_received_data += data
 
-                    if sasl_total_bytes_recieved >= sasl_buffer_length:
+                    if sasl_total_bytes_received >= sasl_buffer_length:
                         # When the LDAP response is splitted accross multiple TCP packets, the SASL buffer length is equal to the MTU of each packet..Which is usually not equal to self.socket_size
                         # This means that the end of one SASL packet/beginning of one other....could be located in the middle of data
                         # We are using "sasl_received_data" instead of "data" & "unprocessed" for this reason
 
-                        # structure of messages when LDAP signing is enabled : sizeOf(encoded_message + signature + 0x0001 + secNum) + encoded_message + signature + 0x0001 + secNum
-                        sasl_signature = sasl_received_data[sasl_buffer_length - 16:sasl_buffer_length - 6]
-                        sasl_sec_num = sasl_received_data[sasl_buffer_length - 4:sasl_buffer_length]
                         sasl_next_packet = sasl_received_data[sasl_buffer_length:]  # the last "data" variable may contain another sasl packet. We'll process it at the next iteration.
-                        sasl_received_data = sasl_received_data[:sasl_buffer_length - 16]  # remove signature + 0x0001 + secNum + the next packet if any, from sasl_received_data
 
-                        kis = self.connection._digest_md5_kis  # renamed to lowercase GC
-                        calculated_signature = bytes.fromhex(md5_hmac(kis, sasl_sec_num + sasl_received_data)[0:20])
-                        if sasl_signature != calculated_signature:
-                            raise LDAPSignatureVerificationFailedError("Signature verification failed for the recieved LDAP message number " + str(int.from_bytes(sasl_sec_num, 'big')) + ". Expected signature " + calculated_signature.hex() + " but got " + sasl_signature.hex() + ".")
-                        sasl_total_bytes_recieved = 0
+                        if self.connection.sasl_mechanism == DIGEST_MD5:
+                            # structure of messages when LDAP signing is enabled : sizeOf(encoded_message + signature + 0x0001 + secNum) + encoded_message + signature + 0x0001 + secNum
+                            sasl_sec_num = sasl_received_data[sasl_buffer_length - 4:sasl_buffer_length]
+                            sasl_received_data = sasl_received_data[:sasl_buffer_length-6] # Removing secNum and the message type number to fit also encryption
+                            sasl_buffer_length = len(sasl_received_data) # We can do that because len(ciphertext) == len(plaintext) for RC4
+                            if self.connection._digest_md5_kcs_cipher:
+                                # structure of messages when LDAP encryption is enabled: sizeOf(ciphertext + 0x0001 + secNum) + CIPHER(encoded_message + pad+ signature) + 0x0001 + secNum
+                                sasl_received_data = self.connection._digest_md5_kcs_cipher.decrypt(sasl_received_data)
+                            sasl_signature = sasl_received_data[sasl_buffer_length - 10:]
+                            sasl_received_data = sasl_received_data[:sasl_buffer_length - 10]  # retrieve encoded_message
+                            kis = self.connection._digest_md5_kis  # renamed to lowercase GC
+                            calculated_signature = bytes.fromhex(md5_hmac(kis, sasl_sec_num + sasl_received_data)[0:20])
+                            if sasl_signature != calculated_signature:
+                                raise LDAPSignatureVerificationFailedError("Signature verification failed for the recieved LDAP message number " + str(int.from_bytes(sasl_sec_num, 'big')) + ". Expected signature " + calculated_signature.hex() + " but got " + sasl_signature.hex() + ".")
+ 
+                        elif self.connection.authentication == NTLM:
+                            sasl_received_data = self.connection.ntlm_client.unseal(sasl_received_data[:sasl_buffer_length])
+                        
+                        elif self.connection.sasl_mechanism == GSSAPI:
+                            if posix_gssapi_unavailable:
+                                import winkerberos
+                                winkerberos.authGSSClientUnwrap(self.connection.krb_ctx, base64.b64encode(sasl_received_data[:sasl_buffer_length]).decode('utf-8'))
+                                sasl_received_data = base64.b64decode(winkerberos.authGSSClientResponse(self.connection.krb_ctx))
+                            else:
+                                sasl_received_data = self.connection.krb_ctx.unwrap(sasl_received_data[:sasl_buffer_length]).message
+                        
+                        sasl_total_bytes_received = 0
                         unprocessed += sasl_received_data
                         sasl_received_data = b''
                 else:

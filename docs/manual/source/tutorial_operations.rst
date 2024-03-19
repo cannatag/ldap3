@@ -261,7 +261,7 @@ let you use standard Python objects to perform the CRUD (Create, Read, Update, D
 decent database interface. It uses an **ORM** (*Object Relational Mapper*) to link entries in the DIT with standard Python objects and
 let you operate on this object in a pythonic way.
 
-Let's move back the 'b.smith* entry to its original context and values and let's create a few more entries in that context::
+Let's move back the 'b.smith' entry to its original context and values and let's create a few more entries in that context::
 
     >>> conn.modify_dn('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'cn=b.smith', new_superior='ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
     True

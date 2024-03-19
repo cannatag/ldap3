@@ -154,28 +154,28 @@ server trust the credential provided when establishing the secure channel::
 Digest-MD5
 ^^^^^^^^^^
 
-To use the DIGEST-MD5 mechanism you must pass a 4-value or 5-value tuple as sasl_credentials: (realm, user, password, authz_id, enable_signing). You can pass None
-for 'realm', 'authz_id' and 'enable_signing' if not used::
+To use the DIGEST-MD5 mechanism you must pass a 4-value or 5-value tuple as sasl_credentials: (realm, user, password, authz_id, enable_protection). You can pass None
+for 'realm', 'authz_id' and 'enable_protection' if not used::
 
     from ldap3 import Server, Connection, SASL, DIGEST_MD5
     server = Server(host = test_server, port = test_port)
     c = Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = SASL,
-                             sasl_mechanism = DIGEST_MD5, sasl_credentials = (None, 'username', 'password', None, 'sign'))
+                             sasl_mechanism = DIGEST_MD5, sasl_credentials = (None, 'username', 'password', None, ENCRYPT))
 
 Username is not required to be an LDAP entry, but it can be any identifier recognized by the server (i.e. email, principal, ...). If
 you pass None as 'realm' the default realm of the LDAP server will be used.
 
-``enable_signing`` is an optional argument, which is only relevant for Digest-MD5 authentication. This argument enable or disable signing
-(Integrity protection) when performing LDAP queries.
+``enable_protection`` is an optional argument, which is only relevant for Digest-MD5 authentication. This argument enable or disable signing/encryption
+(Integrity or Confidentiality protection) when performing LDAP queries.
 LDAP signing is a way to prevent replay attacks without encrypting the LDAP traffic. Microsoft publicly recommend to enforce LDAP signing when talking to
 an Active Directory server : https://support.microsoft.com/en-us/help/4520412/2020-ldap-channel-binding-and-ldap-signing-requirements-for-windows
+LDAP encryption is a way to prevent eavesdropping, it is especially useful to send/receive sensitive data (e.g password change for a user). Active Directory supports Digest-MD5 encryption : https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/a98c1f56-8246-4212-8c4e-d92da1a9563b.
 
-* When ``enable_signing`` is set to 'sign', LDAP requests are signed and signature of LDAP responses is verified.
-* When ``enable_signing`` is set to any other value or not set, LDAP requests are not signed.
+* When ``enable_protection`` is set to SIGN, LDAP requests are signed and signature of LDAP responses is verified.
+* When ``enable_protection`` is set to ENCRYPT, LDAP requests are encrypted and LDAP responses are decrypted and their signature is verified.
+* When ``enable_protection`` is set to any other value or not set, LDAP requests are not signed.
 
-Also, DIGEST-MD5 authentication with encryption in addition to the integrity protection (``qop=auth-conf``) is not yet supported by ldap3.
-
-**Using DIGEST-MD5 without LDAP signing is considered deprecated and should not be used.**
+**Using DIGEST-MD5 is considered deprecated (RFC6331, July 2011) and should not be used.**
 
 
 .. _sasl-kerberos:
@@ -225,15 +225,18 @@ or pass an appropriate value of the ``ReverseDnsSetting`` enum as the first elem
 
 
 .. note::
-   `ldap3` does not currently support any SASL data security layers, only authentication.
+   `ldap3` currently support SASL authentication and data security layers for encryption.
    
-   If your server requries a string Security Strength Factor (SSF), you may receive
+   If your server requires a string Security Strength Factor (SSF), you must enable data security layers using ``session_security=ENCRYPT``.
+   
+   from ldap3 import KERBEROS, ENCRYPT, Connection
+   c = Connection(
+        server, authentication=SASL, sasl_mechanism=KERBEROS, session_security=ENCRYPT)
+
+Plainmay receive
    an ``LDAPStrongerAuthRequiredResult`` error when binding, e.g.:
    
        SASL:[GSSAPI]: Sign or Seal are required.
-  
-
-Plain
 ^^^^^
 The PLAIN SASL mechanism sends data in clear text, so it must rely on other means of securing the connection between the client and the LDAP server.
 As stated in RFC4616 the PLAIN mechanism should not be used without adequate data security protection as this mechanism affords no integrity or confidentiality
@@ -274,6 +277,9 @@ You can enable LDAP Channel Binding over TLS with the argument ``channel_binding
                     channel_binding=TLS_CHANNEL_BINDING, authentication=NTLM)
 
 This option is only relevant for NTLM authentication done over TLS.
+It also supports confidentiality when performing LDAP Queries using the following:
+
+    c = Connection(s, user="AUTHTEST\\Administrator", password="E52CAC67419A9A224A3B108F3FA6CB6D:8846F7EAEE8FB117AD06BDD830B7586C", authentication=NTLM, session_security=ENCRYPT)
 
 LDAPI (LDAP over IPC)
 ---------------------

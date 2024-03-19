@@ -226,7 +226,7 @@ while to get all the user and all the operational attributes you can use::
     attributes=[ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES]
 
 
-Keep in mind that the server may not return some operational attribute if they are not explicitly requested
+Keep in mind that the server may not return some operational attributes if they are not explicitly requested
 (because they may take a long time or many resources to be computed), so if you need a specific attribute is better to
 request it explicitly. Also, some servers dont' return operational attributes information when reading the schema.
 

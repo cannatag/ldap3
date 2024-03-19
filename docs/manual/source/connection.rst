@@ -31,9 +31,9 @@ The following strategies are available:
 
    * request: the original request of the operation::
 
-      from ldap3 import Server, Connection, SAFE_SYNC
+      from ldap3 import Server, Connection, SAFE_SYNC, AUTO_BIND_NO_TLS
       server = Server('my_server')
-      conn = Connection(server, 'my_user', 'my_password', client_strategy=SAFE_SYNC, auto_bind=True)
+      conn = Connection(server, 'my_user', 'my_password', client_strategy=SAFE_SYNC, auto_bind=AUTO_BIND_NO_TLS)
       status, result, response, _ = conn.search('o=test', '(objectclass=*)')  # usually you don't need the original request (4th element of the return tuple)
 
    The SafeSync and SafeRestartable strategies can be used with the Abstract Layer, but the Abstract Layer currently is NOT thread safe.
@@ -55,6 +55,8 @@ Connection parameters are:
 * user: the account of the user to log in for simple bind (defaults to None).
 
 * password: the password of the user for simple bind (defaults to None)
+
+* session_security: the session security to provide if the authentication protocol supports it. Can be ENCRYPT
 
 * auto_bind: automatically opens and binds the connection. Can be AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_TLS_BEFORE_BIND.
 
@@ -331,7 +333,7 @@ You can check the result value to know if the operation has been sucessful. The 
 
 * message: a diagnostic message sent by the server (optional)
 
-* dn: a distinguish name of an entry related to the request (optional)
+* dn: a distinguished name of an entry related to the request (optional)
 
 * referrals: a list of referrals where the operation can be continued (optional)
 
@@ -376,6 +378,8 @@ There are some standard formatters defined in the library, most of them are defi
 * format_boolean  # returns a boolean
 
 * format_time  # returns a datetime object (with properly defined timezone, or UTC if timezone is not specified) as defined in RFC 4517
+
+* format_postal  # returns a postal address formatted as a string as defined in RFC 4517
 
 You can even define your custom formatter for specific purposes. Just pass a dictionary in the format {'identifier': callable}
 in the 'formatter' parameter of the Server object. The callable must be able to receive a bytes value and convert it to the relevant object or class instance.

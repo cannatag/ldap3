@@ -26,8 +26,8 @@
 from threading import Thread, Lock, Event
 import socket
 
-from .. import get_config_parameter, DIGEST_MD5
-from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult, LDAPSignatureVerificationFailedError
+from .. import get_config_parameter, DIGEST_MD5, ENCRYPT
+from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult, LDAPSignatureVerificationFailedError, LDAPConfigurationError
 from ..strategy.base import BaseStrategy, RESPONSE_COMPLETE
 from ..protocol.rfc4511 import LDAPMessage
 from ..utils.log import log, log_enabled, format_ldap_message, ERROR, NETWORK, EXTENDED
@@ -87,6 +87,8 @@ class AsyncStrategy(BaseStrategy):
                         raise  # unexpected exception - re-raise
                     if len(data) > 0:
                         # If we are using DIGEST-MD5 and LDAP signing is set : verify & remove the signature from the message
+                        if self.connection._digest_md5_kcs_cipher or self.connection.session_security == ENCRYPT:
+                            raise LDAPConfigurationError("Confidentiality layers are only available for synchronous strategies")
                         if self.connection.sasl_mechanism == DIGEST_MD5 and self.connection._digest_md5_kis and not self.connection.sasl_in_progress:
                             data = sasl_next_packet + data
 
@@ -102,13 +104,14 @@ class AsyncStrategy(BaseStrategy):
                                 # When the LDAP response is splitted accross multiple TCP packets, the SASL buffer length is equal to the MTU of each packet..Which is usually not equal to self.socket_size
                                 # This means that the end of one SASL packet/beginning of one other....could be located in the middle of data
                                 # We are using "sasl_received_data" instead of "data" & "unprocessed" for this reason
+                                sasl_next_packet = sasl_received_data[sasl_buffer_length:]  # the last "data" variable may contain another sasl packet. We'll process it at the next iteration.
 
                                 # structure of messages when LDAP signing is enabled : sizeOf(encoded_message + signature + 0x0001 + secNum) + encoded_message + signature + 0x0001 + secNum
-                                sasl_signature = sasl_received_data[sasl_buffer_length - 16:sasl_buffer_length - 6]
                                 sasl_sec_num = sasl_received_data[sasl_buffer_length - 4:sasl_buffer_length]
-                                sasl_next_packet = sasl_received_data[sasl_buffer_length:]  # the last "data" variable may contain another sasl packet. We'll process it at the next iteration.
-                                sasl_received_data = sasl_received_data[:sasl_buffer_length - 16]  # remove signature + 0x0001 + secNum + the next packet if any, from sasl_received_data
-
+                                sasl_received_data = sasl_received_data[:sasl_buffer_length-6] # Removing secNum and the message type number to fit also encryption
+                                sasl_buffer_length = len(sasl_received_data) # We can do that because len(ciphertext) == len(plaintext) for RC4
+                                sasl_signature = sasl_received_data[sasl_buffer_length - 10:]
+                                sasl_received_data = sasl_received_data[:sasl_buffer_length - 10]  # retrieve encoded_message
                                 kis = self.connection._digest_md5_kis  # renamed to lowercase GC
                                 calculated_signature = bytes.fromhex(md5_hmac(kis, sasl_sec_num + sasl_received_data)[0:20])
                                 if sasl_signature != calculated_signature:

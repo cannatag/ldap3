@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-import socket
+import socket, base64
 try:  # try to discover if unix sockets are available for LDAP over IPC (ldapi:// scheme)
     # noinspection PyUnresolvedReferences
     from socket import AF_UNIX
@@ -34,7 +34,7 @@ from struct import pack
 from platform import system
 from random import choice
 
-from .. import SYNC, ANONYMOUS, get_config_parameter, BASE, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES, DIGEST_MD5
+from .. import SYNC, ANONYMOUS, get_config_parameter, BASE, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES, DIGEST_MD5, ENCRYPT, NTLM, GSSAPI
 from ..core.results import DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, LDAPStartTLSError, \
@@ -63,6 +63,7 @@ from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTEN
 from ..utils.asn1 import encode, decoder, ldap_result_to_dict_fast, decode_sequence
 from ..utils.conv import to_unicode
 from ..protocol.sasl.digestMd5 import md5_h, md5_hmac
+from ..protocol.sasl.kerberos import posix_gssapi_unavailable
 
 SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'
 TRANSACTION_ERROR = 'TRANSACTION_ERROR'
@@ -194,6 +195,15 @@ class BaseStrategy(object):
         Tries to open and connect a socket to a Server
         raise LDAPExceptionError if unable to open or connect socket
         """
+        def _cleanup_socket():
+            """ Close the open socket. Call before raising exceptions so no
+                lingering sockets are left about.
+            """
+            try:
+                self.connection.socket.close()
+            except OSError:
+                pass
+
         try:
             self.connection.socket = socket.socket(*address[:3])
         except Exception as e:
@@ -231,6 +241,7 @@ class BaseStrategy(object):
                 if log_enabled(ERROR):
                     log(ERROR, 'Unable to locally bind to local address <%s> with any of the source ports <%s> for connection <%s due to <%s>',
                         self.connection.source_address, self.connection.source_port_list, self.connection, last_bind_exc)
+                _cleanup_socket()
                 raise communication_exception_factory(LDAPSocketOpenError, type(last_bind_exc)(str(last_bind_exc)))(last_bind_exc)
 
         try:  # set socket timeout for opening connection
@@ -242,6 +253,7 @@ class BaseStrategy(object):
             if log_enabled(ERROR):
                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             # raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
+            _cleanup_socket()
             raise communication_exception_factory(LDAPSocketOpenError, type(e)(str(e)))(self.connection.last_error)
 
         # Set connection recv timeout (must be set after connect,
@@ -265,6 +277,7 @@ class BaseStrategy(object):
         #     raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
                 if log_enabled(ERROR):
                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                _cleanup_socket()
                 raise communication_exception_factory(LDAPSocketOpenError, type(e)(str(e)))(self.connection.last_error)
 
         if use_ssl:
@@ -276,6 +289,7 @@ class BaseStrategy(object):
                 self.connection.last_error = 'socket ssl wrapping error: ' + str(e)
                 if log_enabled(ERROR):
                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                _cleanup_socket()
                 raise communication_exception_factory(LDAPSocketOpenError, type(e)(str(e)))(self.connection.last_error)
         if self.connection.usage:
             self.connection._usage.open_sockets += 1
@@ -435,10 +449,14 @@ class BaseStrategy(object):
                                     orig_attr, _, _ = attribute_type.partition(';')
                                     attrs_to_remove.append(orig_attr)
                             for attribute_type in attrs_to_remove:
-                                if log_enabled(PROTOCOL):
-                                    log(PROTOCOL, 'attribute type <%s> removed in response because of same attribute returned as range by the server in <%s>', attribute_type, self)
-                                del entry['raw_attributes'][attribute_type]
-                                del entry['attributes'][attribute_type]
+                                try:
+                                    del entry['raw_attributes'][attribute_type]
+                                    del entry['attributes'][attribute_type]
+
+                                    if log_enabled(PROTOCOL):
+                                        log(PROTOCOL, 'attribute type <%s> removed in response because of same attribute returned as range by the server in <%s>', attribute_type, self)
+                                except KeyError:
+                                    ...
 
             request = self._outstanding.pop(message_id)
         else:
@@ -872,11 +890,26 @@ class BaseStrategy(object):
                 # If we are using DIGEST-MD5 and LDAP signing is enabled: add a signature to the message
                 sec_num = self.connection._digest_md5_sec_num  # added underscore GC
                 kic = self.connection._digest_md5_kic  # lowercase GC
-
-                # RFC 2831 : encoded_message = sizeOf(encored_message + signature + 0x0001 + secNum) + encoded_message + signature + 0x0001 + secNum
                 signature = bytes.fromhex(md5_hmac(kic, int(sec_num).to_bytes(4, 'big') + encoded_message)[0:20])
-                encoded_message = int(len(encoded_message) + 4 + 2 + 10).to_bytes(4, 'big') + encoded_message + signature + int(1).to_bytes(2, 'big') + int(sec_num).to_bytes(4, 'big')
+                payload = encoded_message + signature
+                if self.connection._digest_md5_kcc_cipher:
+                    payload = self.connection._digest_md5_kcc_cipher.encrypt(payload)
+                # RFC 2831 sign: encoded_message = sizeOf(encoded_message + signature + 0x0001 + secNum) + encoded_message + signature + 0x0001 + secNum
+                # RFC 2831 encrypt: encoded_message = sizeOf(ciphertext + 0x0001 +secNum) + CIPHER(encoded_message + pad + signature) + 0x0001 + secNum
+                encoded_message = int(len(payload) + 2 + 4).to_bytes(4, 'big') + payload + int(1).to_bytes(2, 'big') + int(sec_num).to_bytes(4, 'big')
                 self.connection._digest_md5_sec_num += 1
+            elif self.connection.session_security == ENCRYPT and not self.connection.sasl_in_progress:
+                if self.connection.authentication == NTLM:
+                    # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/115f9c7d-bc30-4262-ae96-254555c14ea6
+                    encoded_message = self.connection.ntlm_client.seal(encoded_message)
+                elif self.connection.sasl_mechanism == GSSAPI:
+                    if posix_gssapi_unavailable:
+                        import winkerberos
+                        winkerberos.authGSSClientWrap(self.connection.krb_ctx, base64.b64encode(encoded_message).decode('utf-8'), None, 1)
+                        encoded_message = base64.b64decode(winkerberos.authGSSClientResponse(self.connection.krb_ctx))
+                    else:
+                        encoded_message = self.connection.krb_ctx.wrap(encoded_message, True).message
+                encoded_message = int(len(encoded_message)).to_bytes(4, 'big') + encoded_message
 
             self.connection.socket.sendall(encoded_message)
             if log_enabled(EXTENDED):

@@ -16,7 +16,7 @@ In the ldap3 library the signature for the Add operation is::
             attributes=None,
             controls=None)
 
-* dn: distinguish name of the object to add
+* dn: distinguished name of the object to add
 
 * object_class: class name of the attribute to add, can be a string containing a single value or a list of strings
 

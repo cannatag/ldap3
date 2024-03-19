@@ -434,3 +434,23 @@ def format_sid(raw_value):
         pass
 
     return raw_value
+
+
+def format_postal(raw_value):
+    """
+    RFC 4517 Postal Address
+
+    PostalAddress = line *( DOLLAR line )
+    line          = 1*line-char
+    line-char     = %x00-23
+                    / (%x5C "24")  ; escaped "$"
+                    / %x25-5B
+                    / (%x5C "5C")  ; escaped "\"
+                    / %x5D-7F
+                    / UTFMB
+    """
+    escape_pattern = re.compile(br'(\$)|(\\24)|(\\5C)', re.IGNORECASE)
+    escape_replace = (None, b'\n', b'$', b'\\')
+    def unescape(match):
+        return escape_replace[match.lastindex]
+    return format_unicode(escape_pattern.sub(unescape, raw_value))

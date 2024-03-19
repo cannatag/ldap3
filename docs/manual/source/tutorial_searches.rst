@@ -24,7 +24,7 @@ with ``&``) or at least one assertion (**or** group, specified with ``|``) must 
 
 Operators allowed in an assertion are ``=`` (**equal**), ``<=`` (**less than or equal**), ``>=`` (**greater than or equal**),
 ``=*`` (**present**), ``~=`` (**approximate**), and ``:=`` (**extensible**). Surprisingly the *less than* and the
-*greater than* operators don't exist in the LDAP filter syntax. The *aproximate* and the *extensible* operators are obscure
+*greater than* operators don't exist in the LDAP filter syntax. The *approximate* and the *extensible* operators are obscure
 and seldom used. In an equality filter you can use the ``*`` character as a wildcard.
 
 For example, to search for all users named John with an email ending with '@example.org' the filter will be
@@ -230,7 +230,7 @@ ldap3 hides all this machinery in the ``paged_search()`` function of the **exten
     >>> for entry in entries:
     >>>     print(entry)
 
-Entries are returned in a generator, which can be useful when you have very long list of entries or have memory limitations. Also, it sends the requests to the LDAP server only when entries are consumed in the generator. Remember, a generator can be used only one time, so you must elaborate the results in a sequential way. If you don't want the entries returned in a generator, you can pass the
+Entries are returned in a generator, which can be useful when you have very long list of entries or have memory limitations. Also, it sends the requests to the LDAP server only when entries are consumed in the generator. Remember, a generator can be used only one time, so you must iterate over the results in a sequential way. If you don't want the entries returned in a generator, you can pass the
 ``generator=False`` parameter to get all the entries in a list. In this case all the paged searches are performed by the ``paged_search()``
 function and the set of entries found are queued in a list.
 

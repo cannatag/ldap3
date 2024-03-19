@@ -22,7 +22,7 @@ The Tls object
 You can customize the server Tls object with references to keys, certificates and CAs. It includes all attributes needed to securely connect over an ssl socket:
 
 * local_private_key_file: the file with the private key of the client
-* local_certificate_file: the certificate of the server
+* local_certificate_file: the file with the certificate of the client
 * validate: specifies if the server certificate must be validated, values can be: CERT_NONE (certificates are ignored), CERT_OPTIONAL (not required, but validated if provided) and CERT_REQUIRED (required and validated)
 * version: SSL or TLS version to use, can be one of the following: SSLv2, SSLv3, SSLv23, TLSv1 (as per Python 3.3. The version list can be different in other Python versions)
 * ca_certs_file: the file containing the certificates of the certification authorities
@@ -110,3 +110,34 @@ an Active Directory server : https://support.microsoft.com/en-us/help/4520412/20
 Also, DIGEST-MD5 authentication with encryption in addition to the integrity protection (``qop=auth-conf``) is not yet supported by ldap3.
 
 **Using DIGEST-MD5 without LDAP signing is considered deprecated and should not be used.**
+
+Using certificate authentication with Microsoft Active Directory
+================================================================
+
+Microsoft provides two ways to use certificate authentication within an Active Directory environment as described in the documentation: https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/8e73932f-70cf-46d6-88b1-8d9f86235e81.
+
+If you use an implicit TLS connection (i.e., on the port 636), then the connection is considered to be immediately authenticated (bound) as 
+the credentials represented by the client certificate. Thus you have to use the function ``open()`` instead of ``bind()``::
+
+     import ldap3
+     tls = ldap3.Tls(local_private_key_file='user.key',local_certificate_file='user.crt')
+     ldap_server = ldap3.Server('servername', use_ssl=True, port=636, tls=tls)
+     ldap_connection = ldap3.Connection(ldap_server)
+     ldap_connection.open()
+     print(ldap_connection.extend.standard.who_am_i())
+
+If you use an explicit TLS connection (via StartTLS), you have to use the EXTERNAL mechanism and set the ``auto_bind`` parameter of 
+the ``Connection`` object to ``AUTO_BIND_TLS_BEFORE_BIND``::
+
+     import ldap3
+     tls = ldap3.Tls(local_private_key_file='user.key',local_certificate_file='user.crt')
+     ldap_server = ldap3.Server('servername', port=389, tls=tls)
+     ldap_connection = ldap3.Connection(ldap_server, authentication=ldap3.SASL, sasl_mechanism=ldap3.EXTERNAL, auto_bind=ldap3.AUTO_BIND_TLS_BEFORE_BIND)
+     print(ldap_connection.extend.standard.who_am_i())
+
+According to the documentation, Active Directory also implements "explicit assertion" as defined in the RFC2830 but only when using StartTLS. 
+The ``authzId`` field must contains the distinguished name of the object (prefixed with ``dn:``) associated with the credentials represented by the certificate::
+
+    ldap_connection = ldap3.Connection(ldap_server, authentication=ldap3.SASL, sasl_mechanism=ldap3.EXTERNAL, auto_bind=ldap3.AUTO_BIND_TLS_BEFORE_BIND, 
+                                        sasl_credentials='dn:CN=John Doe,CN=Users,DC=contoso,DC=com')
+

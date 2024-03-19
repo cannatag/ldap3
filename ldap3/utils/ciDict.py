@@ -49,6 +49,10 @@ class CaseInsensitiveDict(MutableMapping):
 
     @staticmethod
     def _ci_key(key):
+        if type(key) is str and ';' in key:
+            # remove transfer option (if any)
+            # eg. 'userCertificate;binary' -> 'userCertificate'
+            key = key.split(';')[0]
         return key.strip().lower() if hasattr(key, 'lower') else key
 
     def __delitem__(self, key):

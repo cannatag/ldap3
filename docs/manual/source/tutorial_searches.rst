@@ -24,7 +24,7 @@ with ``&``) or at least one assertion (**or** group, specified with ``|``) must 
 
 Operators allowed in an assertion are ``=`` (**equal**), ``<=`` (**less than or equal**), ``>=`` (**greater than or equal**),
 ``=*`` (**present**), ``~=`` (**approximate**), and ``:=`` (**extensible**). Surprisingly the *less than* and the
-*greater than* operators don't exist in the LDAP filter syntax. The *aproximate* and the *extensible* operators are obscure
+*greater than* operators don't exist in the LDAP filter syntax. The *approximate* and the *extensible* operators are obscure
 and seldom used. In an equality filter you can use the ``*`` character as a wildcard.
 
 For example, to search for all users named John with an email ending with '@example.org' the filter will be

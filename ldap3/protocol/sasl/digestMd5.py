@@ -27,8 +27,11 @@ from binascii import hexlify
 import hashlib
 import hmac
 
-from ... import SEQUENCE_TYPES
+from Cryptodome.Cipher import ARC4
+
+from ... import SEQUENCE_TYPES, ENCRYPT, SIGN
 from ...protocol.sasl.sasl import abort_sasl_negotiation, send_sasl_negotiation, random_hex_string
+from ...core.exceptions import LDAPSASLBindInProgressError
 
 
 STATE_KEY = 0
@@ -85,9 +88,29 @@ def sasl_digest_md5(connection, controls):
     if 'realm' not in server_directives or 'nonce' not in server_directives or 'algorithm' not in server_directives:  # mandatory directives, as per RFC2831
         abort_sasl_negotiation(connection, controls)
         return None
+    
 
     # step Two of RFC2831
+    # TODO support more ciphers and give choice to user
+    supported_ciphers = ['rc4']
+
     charset = server_directives['charset'] if 'charset' in server_directives and server_directives['charset'].lower() == 'utf-8' else 'iso8859-1'
+    cipher=b''
+    qop = b'auth'
+    if len(connection.sasl_credentials) == 5 and not connection.server.ssl:
+        connection._digest_md5_sec_num = 0
+        if connection.sasl_credentials[4] == SIGN:
+            qop = b'auth-int'
+        elif connection.sasl_credentials[4] == ENCRYPT:
+            for c in supported_ciphers:
+                if c in server_directives['cipher']:
+                    cipher = c.encode(charset)
+                    break
+            if cipher == b'':
+                abort_sasl_negotiation(connection, controls)
+                raise LDAPSASLBindInProgressError(f'Cipher negociation failed, Client only supports {supported_ciphers} and Server {server_directives["cipher"]}')
+            qop = b'auth-conf'
+
     user = connection.sasl_credentials[1].encode(charset)
     realm = (connection.sasl_credentials[0] if connection.sasl_credentials[0] else (server_directives['realm'] if 'realm' in server_directives else '')).encode(charset)
     password = connection.sasl_credentials[2].encode(charset)
@@ -95,10 +118,6 @@ def sasl_digest_md5(connection, controls):
     nonce = server_directives['nonce'].encode(charset)
     cnonce = random_hex_string(16).encode(charset)
     uri = b'ldap/' + connection.server.host.encode(charset)
-    qop = b'auth'
-    if len(connection.sasl_credentials) == 5 and connection.sasl_credentials[4] == 'sign' and not connection.server.ssl:
-        qop = b'auth-int'
-        connection._digest_md5_sec_num = 0
 
     digest_response = b'username="' + user + b'",'
     digest_response += b'realm="' + realm + b'",'
@@ -107,6 +126,8 @@ def sasl_digest_md5(connection, controls):
     digest_response += b'cnonce="' + cnonce + b'",'
     digest_response += b'digest-uri="' + uri + b'",'
     digest_response += b'qop=' + qop + b','
+    if cipher != b'':
+        digest_response += b'cipher="' + cipher + b'",'
     digest_response += b'nc=00000001' + b','
     if charset == 'utf-8':
         digest_response += b'charset="utf-8",'
@@ -115,9 +136,13 @@ def sasl_digest_md5(connection, controls):
     a1 = b':'.join([a0, nonce, cnonce, authz_id]) if authz_id else b':'.join([a0, nonce, cnonce])
     a2 = b'AUTHENTICATE:' + uri + (b':00000000000000000000000000000000' if qop in [b'auth-int', b'auth-conf'] else b'')
 
-    if qop == b'auth-int':
+    if qop != b'auth':
         connection._digest_md5_kis = md5_h(md5_h(a1) + b"Digest session key to server-to-client signing key magic constant")
         connection._digest_md5_kic = md5_h(md5_h(a1) + b"Digest session key to client-to-server signing key magic constant")
+    if qop == b'auth-conf':
+        connection._digest_md5_kcs_cipher = ARC4.new(md5_h(md5_h(a1) + b"Digest H(A1) to server-to-client sealing key magic constant"))
+        connection._digest_md5_kcc_cipher = ARC4.new(md5_h(md5_h(a1) + b"Digest H(A1) to client-to-server sealing key magic constant"))
+
 
     digest_response += b'response="' + md5_hex(md5_kd(md5_hex(md5_h(a1)), b':'.join([nonce, b'00000001', cnonce, qop, md5_hex(md5_h(a2))]))) + b'"'
 

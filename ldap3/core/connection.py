@@ -32,7 +32,7 @@ from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLAC
     SUBTREE, ASYNC, SYNC, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, ASYNC_STREAM, \
     RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, SAFE_SYNC, SAFE_RESTARTABLE, \
     AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL,\
-    DIGEST_MD5, GSSAPI, PLAIN, DSA, SCHEMA, ALL
+    DIGEST_MD5, GSSAPI, PLAIN, DSA, SCHEMA, ALL, ENCRYPT, SIGN
 
 from .results import RESULT_SUCCESS, RESULT_COMPARE_TRUE, RESULT_COMPARE_FALSE
 from ..extend import ExtendedOperationsRoot
@@ -138,6 +138,8 @@ class Connection(object):
     :type user: str
     :param password: the password for simple authentication
     :type password: str
+    :param session_security: the session security to provide if the authentication protocol supports it
+    :type session_security: str, can ENCRYPT
     :param auto_bind: specify if the bind will be performed automatically when defining the Connection object
     :type auto_bind: int, can be one of AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND as specified in ldap3
     :param version: LDAP version, default to 3
@@ -187,6 +189,7 @@ class Connection(object):
                  server,
                  user=None,
                  password=None,
+                 session_security=None,
                  auto_bind=AUTO_BIND_DEFAULT,
                  version=3,
                  authentication=None,
@@ -288,8 +291,18 @@ class Connection(object):
             self.auto_encode = auto_encode
             self._digest_md5_kic = None
             self._digest_md5_kis = None
+            self._digest_md5_kcc_cipher = None
+            self._digest_md5_kcs_cipher = None
             self._digest_md5_sec_num = 0
+            self.krb_ctx = None
 
+            if session_security and not (self.authentication == NTLM or self.sasl_mechanism == GSSAPI):
+                self.last_error = '"session_security" option only available for NTLM and GSSAPI'
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', self.last_error, self)
+                raise LDAPInvalidValueError(self.last_error)
+            self.session_security = session_security
+            
             port_err = check_port_and_port_list(source_port, source_port_list)
             if port_err:
                 if log_enabled(ERROR):
@@ -434,6 +447,7 @@ class Connection(object):
             r = 'Connection(server={0.server!r}'.format(self)
         r += '' if self.user is None else ', user={0.user!r}'.format(self)
         r += '' if self.password is None else ', password={0.password!r}'.format(self)
+        r += '' if self.session_security is None else ',session_security={0.session_security!r}'.format(self)
         r += '' if self.auto_bind is None else ', auto_bind={0.auto_bind!r}'.format(self)
         r += '' if self.version is None else ', version={0.version!r}'.format(self)
         r += '' if self.authentication is None else ', authentication={0.authentication!r}'.format(self)
@@ -470,6 +484,7 @@ class Connection(object):
             r = 'Connection(server={0.server!r}'.format(self)
         r += '' if self.user is None else ', user={0.user!r}'.format(self)
         r += '' if self.password is None else ", password='{0}'".format('<stripped %d characters of sensitive data>' % len(self.password))
+        r += '' if self.session_security is None else ',session_security={0.session_security!r}'.format(self)
         r += '' if self.auto_bind is None else ', auto_bind={0.auto_bind!r}'.format(self)
         r += '' if self.version is None else ', version={0.version!r}'.format(self)
         r += '' if self.authentication is None else ', authentication={0.authentication!r}'.format(self)
@@ -690,6 +705,11 @@ class Connection(object):
             log(BASIC, 'start (RE)BIND operation via <%s>', self)
         self.last_error = None
         with self.connection_lock:
+            if self.session_security == ENCRYPT or self.self.connection._digest_md5_kcs_cipher:
+                self.last_error = 'Rebind not supported with previous encryption'
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', self.last_error, self)
+                raise LDAPBindError(self.last_error)
             if user:
                 self.user = user
             if password is not None:
@@ -1363,11 +1383,13 @@ class Connection(object):
                     # additional import for NTLM
                     from ..utils.ntlm import NtlmClient
                     domain_name, user_name = self.user.split('\\', 1)
-                    ntlm_client = NtlmClient(user_name=user_name, domain=domain_name, password=self.password)
+                    self.ntlm_client = NtlmClient(user_name=user_name, domain=domain_name, password=self.password)
+                    if self.session_security == ENCRYPT:
+                        self.ntlm_client.confidentiality = True
 
                     # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
                     # send a sicilyPackageDiscovery request (in the bindRequest)
-                    request = bind_operation(self.version, 'SICILY_PACKAGE_DISCOVERY', ntlm_client)
+                    request = bind_operation(self.version, 'SICILY_PACKAGE_DISCOVERY', self.ntlm_client)
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'NTLM SICILY PACKAGE DISCOVERY request sent via <%s>', self)
                     response = self.post_send_single_response(self.send('bindRequest', request, controls))
@@ -1378,7 +1400,7 @@ class Connection(object):
                     if 'server_creds' in result:
                         sicily_packages = result['server_creds'].decode('ascii').split(';')
                         if 'NTLM' in sicily_packages:  # NTLM available on server
-                            request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', ntlm_client)
+                            request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', self.ntlm_client)
                             if log_enabled(PROTOCOL):
                                 log(PROTOCOL, 'NTLM SICILY NEGOTIATE request sent via <%s>', self)
                             response = self.post_send_single_response(self.send('bindRequest', request, controls))
@@ -1391,7 +1413,7 @@ class Connection(object):
                                 result = response[0]
 
                             if result['result'] == RESULT_SUCCESS:
-                                request = bind_operation(self.version, 'SICILY_RESPONSE_NTLM', ntlm_client,
+                                request = bind_operation(self.version, 'SICILY_RESPONSE_NTLM', self.ntlm_client,
                                                          result['server_creds'])
                                 if log_enabled(PROTOCOL):
                                     log(PROTOCOL, 'NTLM SICILY RESPONSE NTLM request sent via <%s>', self)

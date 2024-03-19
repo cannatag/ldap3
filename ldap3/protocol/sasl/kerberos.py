@@ -192,7 +192,7 @@ def _common_determine_authz_id_and_creds(connection):
     return authz_id, creds
 
 
-def _common_process_end_token_get_security_layers(negotiated_token):
+def _common_process_end_token_get_security_layers(negotiated_token, session_security=None):
     """ Process the response we got at the end of our SASL negotiation wherein the server told us what
     minimum security layers we need, and return a bytearray for the client security layers we want.
     This function throws an error on a malformed token from the server.
@@ -208,12 +208,13 @@ def _common_process_end_token_get_security_layers(negotiated_token):
     if server_security_layers in (0, NO_SECURITY_LAYER):
         if negotiated_token[1:] != '\x00\x00\x00':
             raise LDAPCommunicationError("Server max buffer size must be 0 if no security layer")
-    if not (server_security_layers & NO_SECURITY_LAYER):
-        raise LDAPCommunicationError("Server requires a security layer, but this is not implemented")
+    security_layer = CONFIDENTIALITY_PROTECTION if session_security else NO_SECURITY_LAYER 
+    if not (server_security_layers & security_layer):
+        raise LDAPCommunicationError("Server doesn't support the security level asked")
 
     # this is here to encourage anyone implementing client security layers to do it
     # for both windows and posix
-    client_security_layers = bytearray([NO_SECURITY_LAYER, 0, 0, 0])
+    client_security_layers = bytearray([security_layer, 0, 0, 0])
     return client_security_layers
 
 def _posix_sasl_gssapi(connection, controls):
@@ -244,8 +245,9 @@ def _posix_sasl_gssapi(connection, controls):
                 pass
 
         unwrapped_token = ctx.unwrap(in_token)
-        client_security_layers = _common_process_end_token_get_security_layers(unwrapped_token.message)
+        client_security_layers = _common_process_end_token_get_security_layers(unwrapped_token.message, connection.session_security)
         out_token = ctx.wrap(bytes(client_security_layers)+authz_id, False)
+        connection.krb_ctx = ctx
         return send_sasl_negotiation(connection, controls, out_token.message)
     except (gssapi.exceptions.GSSError, LDAPCommunicationError):
         abort_sasl_negotiation(connection, controls)
@@ -285,17 +287,17 @@ def _windows_sasl_gssapi(connection, controls):
             result = send_sasl_negotiation(connection, controls, out_token_bytes)
             in_token = result['saslCreds'] or b''
 
-        winkerberos.authGSSClientUnwrap( ctx,base64.b64encode(in_token).decode('utf-8'))
+        winkerberos.authGSSClientUnwrap(ctx,base64.b64encode(in_token).decode('utf-8'))
         negotiated_token = ''
         if winkerberos.authGSSClientResponse(ctx):
             negotiated_token = base64.standard_b64decode(winkerberos.authGSSClientResponse(ctx))
-        client_security_layers = _common_process_end_token_get_security_layers(negotiated_token)
+        client_security_layers = _common_process_end_token_get_security_layers(negotiated_token, connection.session_security)
         # manually construct a message indicating use of authorization-only layer
         # see winkerberos example: https://github.com/mongodb/winkerberos/blob/master/test/test_winkerberos.py
         authz_only_msg = base64.b64encode(bytes(client_security_layers) + authz_id).decode('utf-8')
         winkerberos.authGSSClientWrap(ctx, authz_only_msg)
         out_token = winkerberos.authGSSClientResponse(ctx) or ''
-
+        connection.krb_ctx = ctx
         return send_sasl_negotiation(connection, controls, base64.b64decode(out_token))
     except (winkerberos.GSSError, LDAPCommunicationError):
         abort_sasl_negotiation(connection, controls)

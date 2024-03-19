@@ -185,18 +185,18 @@ class Tls(object):
                 elif self.validate != ssl.CERT_NONE:
                     ssl_context.load_default_certs(Purpose.SERVER_AUTH)
 
+            if self.ciphers:
+                try:
+                    ssl_context.set_ciphers(self.ciphers)
+                except ssl.SSLError:
+                    pass
+
             if self.certificate_file:
                 ssl_context.load_cert_chain(self.certificate_file, keyfile=self.private_key_file, password=self.private_key_password)
             ssl_context.check_hostname = False
             ssl_context.verify_mode = self.validate
             for option in self.ssl_options:
                 ssl_context.options |= option
-
-            if self.ciphers:
-                try:
-                    ssl_context.set_ciphers(self.ciphers)
-                except ssl.SSLError:
-                    pass
 
             if self.sni:
                 wrapped_socket = ssl_context.wrap_socket(connection.socket, server_side=False, do_handshake_on_connect=do_handshake, server_hostname=self.sni)

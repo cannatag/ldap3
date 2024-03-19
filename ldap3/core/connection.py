@@ -1405,7 +1405,7 @@ class Connection(object):
                         # The Value field contains an MD5 hash of a gss_channel_bindings_struct.
                         # The logic here is heavly inspired by "msldap", "minikerberos" and "asysocks" projects by @skelsec.
                         from hashlib import sha256, md5
-                        ntlm_client.tls_channel_binding = True
+                        self.ntlm_client.tls_channel_binding = True
                         peer_certificate_sha256 = sha256(self.server.tls.peer_certificate).digest()
 
                         # https://datatracker.ietf.org/doc/html/rfc2744#section-3.11
@@ -1424,7 +1424,7 @@ class Connection(object):
 
                         # https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/83f5e789-660d-4781-8491-5f8c6641f75e
                         # "The Value field contains an MD5 hash of a gss_channel_bindings_struct"
-                        ntlm_client.client_av_channel_bindings = md5(channel_binding_struct).digest()
+                        self.ntlm_client.client_av_channel_bindings = md5(channel_binding_struct).digest()
 
                     # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
                     # send a sicilyPackageDiscovery request (in the bindRequest)

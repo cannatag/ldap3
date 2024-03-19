@@ -12,7 +12,7 @@ install ldap3. Then you can download and install the ldap3 library directly from
 
     pip install ldap3
 
-This library has only one dependence on the *pyasn1* module, You can install it or let the installer do it for you.
+This library has only one dependence on the *pyasn1* module, you can install it or let the installer do it for you.
 
 If you need to access a server with the Kerberos SASL authentication mechanism you must install the *gssapi* package.
 
@@ -68,7 +68,7 @@ Library errors
 --------------
 
 You can deal with errors in two different ways. By default in synchronous strategies each LDAP operation returns a
-True/False value that specify if the operation has been successful or not. In case of failures you can check the
+True/False value that specifies if the operation has been successful or not. In case of failures you can check the
 error description in the ```last_error``` attribute of the Connection object. In some cases an exception of the custom
 hierarchy starting from the ```LDAPExceptionError``` class is raised with a description of the error condition in the *args*
 attribute.

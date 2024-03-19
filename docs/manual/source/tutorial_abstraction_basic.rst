@@ -118,7 +118,7 @@ A Writable Entry in a Writer cursor acquires the following statuses in its lifet
 * **Missing mandatory attributes**: some mandatory Attribute values are missing, the Entry cannot be committed.
 
 
-There are three global events (delete, move, rename) that locks a Writable Entry until committed (or discarded). In this case the
+There are three global events (delete, move, rename) that lock a Writable Entry until committed (or discarded). In this case the
 status can be one of the following:
 
 * **Ready for deletion**: Entry is flagged for deletion.

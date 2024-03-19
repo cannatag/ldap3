@@ -73,11 +73,11 @@ Server Pool
    Active strategies check if the server is listening on the specified port. When the 'active' attribute is set to True the strategy tries to open and close a socket on the port. If your LDAP server has problems with the opening and closing of sockets you can set 'active' to False..
 
 Different Server objects can be grouped in a ServerPool object. A ServerPool object can be specified in the Connection object
-to obtain an high availability (HA) connection. This is useful for long standing connections (for example an LDAP authenticator
+to obtain a high availability (HA) connection. This is useful for long standing connections (for example an LDAP authenticator
 module in an application server) or when you have a multi replica LDAP server infrastructure. The ``active`` and ``exhaust``
 parameter accept either a boolean or a number: if you set ``active=True`` while defining the ServerPool the strategy will check
 for server availability, you can also set this attribute to the maximum number of cycles to try before giving up with an
-LDAPServerPoolExhaustedError exception. With ``exhaust=True`` if a server is not active it will be removed by the pool, if you set it
+LDAPServerPoolExhaustedError exception. With ``exhaust=True`` if a server is not active it will be removed from the pool, if you set it
 to a number this will be the number of seconds an unreachable server is considered offline. When this timout expires the server
 is reinserted in the pool and checked again for availability.
 The pool keeps a single state for all connections that use it. If you want a different state for each connection you must set ``single=False`` while defining the ServerPool.

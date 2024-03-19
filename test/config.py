@@ -73,7 +73,7 @@ test_user_password = 'Rc2597pfop'  # default password for users created in tests
 # test_lazy_connection = True
 # test_check_names = False
 # test_internal_decoder = False
-test_server_type = '389'
+# test_server_type = '389'
 
 test_validator = {}
 try:

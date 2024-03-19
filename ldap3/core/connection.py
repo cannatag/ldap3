@@ -32,7 +32,7 @@ from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLAC
     SUBTREE, ASYNC, SYNC, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, ASYNC_STREAM, \
     RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, SAFE_SYNC, SAFE_RESTARTABLE, \
     AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL,\
-    DIGEST_MD5, GSSAPI, PLAIN, DSA, SCHEMA, ALL, TLS_CHANNEL_BINDING
+    DIGEST_MD5, GSSAPI, PLAIN, DSA, SCHEMA, ALL, TLS_CHANNEL_BINDING, ENCRYPT
 from .results import RESULT_SUCCESS, RESULT_COMPARE_TRUE, RESULT_COMPARE_FALSE
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
@@ -717,7 +717,7 @@ class Connection(object):
             log(BASIC, 'start (RE)BIND operation via <%s>', self)
         self.last_error = None
         with self.connection_lock:
-            if self.session_security == ENCRYPT or self.self.connection._digest_md5_kcs_cipher:
+            if self.session_security == ENCRYPT or self._digest_md5_kcs_cipher:
                 self.last_error = 'Rebind not supported with previous encryption'
                 if log_enabled(ERROR):
                     log(ERROR, '%s for <%s>', self.last_error, self)

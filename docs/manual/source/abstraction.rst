@@ -303,7 +303,7 @@ Cursors contains Entries that are the Python representation of entries stored in
 
 Entries are returned as the result of a Search operation or a Reader search. You can access entry attributes either
 as a dictionary or as properties using the AttrDef key you specified in the ObjectDef.
-``entry['CommonName']`` is the same of ``entry.Common Name`` of ``entry.CommonName`` of ``entry.commonName`` and of ``entry.commonname``.
+``entry['CommonName']`` is the same of ``entry['Common Name']`` of ``entry.CommonName`` of ``entry.commonName`` and of ``entry.commonname``.
 
 Each Entry has a entry_dn() method that returns the distinguished name of the LDAP entry, and a entry_cursor() method that returns a reference
 to the Cursor used to read the entry.

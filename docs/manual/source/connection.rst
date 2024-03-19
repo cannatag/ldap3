@@ -104,6 +104,7 @@ Connection parameters are:
 
 * auto_encode: automatically tries to convert from local encoding to UTF8 for well known syntaxes and types, default to True
 
+* channel_binding: enable Channel Binding. Currently only TLS_CHANNEL_BINDING is implemented and this parameter is only available when using NTLM authentication done over TLS.
 
 .. note::
    The *auto_range* feature is very useful when searching Active Directory servers. When an Active Directory search returns more than 1000 entries this feature is automatically used by the server.

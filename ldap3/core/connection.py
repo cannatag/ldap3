@@ -32,8 +32,7 @@ from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLAC
     SUBTREE, ASYNC, SYNC, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, ASYNC_STREAM, \
     RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, SAFE_SYNC, SAFE_RESTARTABLE, \
     AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL,\
-    DIGEST_MD5, GSSAPI, PLAIN, DSA, SCHEMA, ALL, ENCRYPT, SIGN
-
+    DIGEST_MD5, GSSAPI, PLAIN, DSA, SCHEMA, ALL, TLS_CHANNEL_BINDING
 from .results import RESULT_SUCCESS, RESULT_COMPARE_TRUE, RESULT_COMPARE_FALSE
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
@@ -158,6 +157,8 @@ class Connection(object):
     :type check_names: bool
     :param collect_usage: collect usage metrics in the usage attribute
     :type collect_usage: bool
+    :param channel_binding: Enable Channel Binding
+    :type channel_binding: str
     :param read_only: disable operations that modify data in the LDAP server
     :type read_only: bool
     :param lazy: open and bind the connection only when an actual operation is performed
@@ -200,6 +201,7 @@ class Connection(object):
                  sasl_credentials=None,
                  check_names=True,
                  collect_usage=False,
+                 channel_binding=None,
                  read_only=False,
                  lazy=False,
                  raise_exceptions=False,
@@ -335,6 +337,13 @@ class Connection(object):
             else:
                 self.server_pool = None
                 self.server = server
+
+            if channel_binding == TLS_CHANNEL_BINDING and not (self.authentication == NTLM and self.server.ssl):
+                self.last_error = '"channel_binding" option only available for NTLM authentication over LDAPS'
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', self.last_error, self)
+                raise LDAPInvalidValueError(self.last_error)
+            self.channel_binding = channel_binding
 
             # if self.authentication == SIMPLE and self.user and self.check_names:
             #     self.user = safe_dn(self.user)
@@ -1389,6 +1398,33 @@ class Connection(object):
                     self.ntlm_client = NtlmClient(user_name=user_name, domain=domain_name, password=self.password)
                     if self.session_security == ENCRYPT:
                         self.ntlm_client.confidentiality = True
+
+                    if self.channel_binding == TLS_CHANNEL_BINDING:
+                        # To perform channel binding during NTLM authentication, we need to add a new AV_PAIR (MS-NLMP 2.2.2.1)
+                        # within the AUTHENTICATE_MESSAGE (MS-NLMP 2.2.1.3). This new AV_PAIR has AvId 0x000A (MsvAvChannelBindings).
+                        # The Value field contains an MD5 hash of a gss_channel_bindings_struct.
+                        # The logic here is heavly inspired by "msldap", "minikerberos" and "asysocks" projects by @skelsec.
+                        from hashlib import sha256, md5
+                        ntlm_client.tls_channel_binding = True
+                        peer_certificate_sha256 = sha256(self.server.tls.peer_certificate).digest()
+
+                        # https://datatracker.ietf.org/doc/html/rfc2744#section-3.11
+                        channel_binding_struct = bytes()
+                        initiator_address = b'\x00'*8
+                        acceptor_address = b'\x00'*8
+
+                        # https://datatracker.ietf.org/doc/html/rfc5929#section-4
+                        application_data_raw = b'tls-server-end-point:' + peer_certificate_sha256
+                        len_application_data = len(application_data_raw).to_bytes(4, byteorder='little', signed = False)
+                        application_data = len_application_data
+                        application_data += application_data_raw
+                        channel_binding_struct += initiator_address
+                        channel_binding_struct += acceptor_address
+                        channel_binding_struct += application_data
+
+                        # https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/83f5e789-660d-4781-8491-5f8c6641f75e
+                        # "The Value field contains an MD5 hash of a gss_channel_bindings_struct"
+                        ntlm_client.client_av_channel_bindings = md5(channel_binding_struct).digest()
 
                     # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
                     # send a sicilyPackageDiscovery request (in the bindRequest)

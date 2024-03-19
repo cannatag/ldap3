@@ -328,6 +328,9 @@ class Connection(object):
             if isinstance(server, ServerPool):
                 self.server_pool = server
                 self.server_pool.initialize(self)
+                if self.strategy_type in [MOCK_SYNC,MOCK_ASYNC]:
+                    for server in self.server_pool.servers:
+                        server.check_availability = lambda *_args, **_kwargs: True
                 self.server = self.server_pool.get_current_server(self)
             else:
                 self.server_pool = None

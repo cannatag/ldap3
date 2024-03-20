@@ -1,6 +1,6 @@
 # THIS FILE IS AUTO-GENERATED. PLEASE DO NOT MODIFY
 # version file for ldap3
-# generated on 2024-03-20 22:13:44.684177
+# generated on 2024-03-20 22:20:27.680515
 # on system uname_result(system='Windows', node='ELITE10GC', release='10', version='10.0.19045', machine='AMD64')
 # with Python 3.11.5 - ('tags/v3.11.5:cce6ba9', 'Aug 24 2023 14:38:34') - MSC v.1936 64 bit (AMD64)
 #

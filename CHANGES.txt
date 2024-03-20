@@ -1,3 +1,9 @@
+# 2.10.1- 2024.03.20
+    - tested against Python 3.11
+    - fixed multiple issues
+    - add pycryptodomex as a dependency
+    - add TLS channel binding during NTLM authentication
+
 # 2.9.1 - 2021.07.18
     - new feature: added support for using Kerberos authentication on windows clients using the native winkerberos library
     - new feature: added support for using Channel Bind tokens with Kerberos authentication on windows clients

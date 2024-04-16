@@ -52,7 +52,7 @@ The home page of the ldap3 project is https://github.com/cannatag/ldap3
 Documentation
 -------------
 
-Documentation is available at http://ldap3.readthedocs.io. You can download a PDF copy of the manual at https://media.readthedocs.org/pdf/ldap3/stable/ldap3.pdf
+Documentation is available at http://ldap3.readthedocs.io. You can download a PDF copy of the manual at https://ldap3.readthedocs.io/_/downloads/en/latest/pdf/
 
 
 Download

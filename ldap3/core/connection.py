@@ -66,7 +66,8 @@ from .usage import ConnectionUsage
 from .tls import Tls
 from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, \
     LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangeError, LDAPExceptionError, \
-    LDAPObjectError, LDAPSocketReceiveError, LDAPAttributeError, LDAPInvalidValueError, LDAPInvalidPortError, LDAPStartTLSError
+    LDAPObjectError, LDAPSocketReceiveError, LDAPAttributeError, LDAPInvalidValueError, LDAPInvalidPortError, LDAPStartTLSError, \
+    LDAPPackageUnavailableError
 
 from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json, to_unicode
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED, get_library_log_hide_sensitive_data
@@ -1400,21 +1401,41 @@ class Connection(object):
                         self.ntlm_client.confidentiality = True
 
                     if self.channel_binding == TLS_CHANNEL_BINDING:
+                        self.ntlm_client.tls_channel_binding = True
                         # To perform channel binding during NTLM authentication, we need to add a new AV_PAIR (MS-NLMP 2.2.2.1)
                         # within the AUTHENTICATE_MESSAGE (MS-NLMP 2.2.1.3). This new AV_PAIR has AvId 0x000A (MsvAvChannelBindings).
                         # The Value field contains an MD5 hash of a gss_channel_bindings_struct.
                         # The logic here is heavly inspired by "msldap", "minikerberos" and "asysocks" projects by @skelsec.
-                        from hashlib import sha256, md5
-                        self.ntlm_client.tls_channel_binding = True
-                        peer_certificate_sha256 = sha256(self.server.tls.peer_certificate).digest()
 
-                        # https://datatracker.ietf.org/doc/html/rfc2744#section-3.11
+                        # First, we need to detect which digest algorithm is used
+                        try:
+                            from cryptography import x509
+                            from cryptography.hazmat.backends import default_backend
+                            from cryptography.hazmat.primitives import hashes
+                        except ImportError:
+                            raise LDAPPackageUnavailableError('package cryptography missing')
+
+                        peer_certificate = x509.load_der_x509_certificate(self.server.tls.peer_certificate, default_backend())
+                        peer_certificate_hash_algorithm = peer_certificate.signature_hash_algorithm
+
+                        # RFC 5929 section 4.1 hashes list
+                        rfc5929_hashes_list = (hashes.MD5, hashes.SHA1)
+
+                        # section 4.1 hash function selection
+                        if isinstance(peer_certificate_hash_algorithm, rfc5929_hashes_list):
+                            digest = hashes.Hash(hashes.SHA256(), default_backend())
+                        else:
+                            digest = hashes.Hash(peer_certificate_hash_algorithm, default_backend())
+                        digest.update(self.server.tls.peer_certificate)
+                        peer_certificate_digest = digest.finalize()
+
+                        # Then we build the cb struct according to https://datatracker.ietf.org/doc/html/rfc2744#section-3.11
                         channel_binding_struct = bytes()
                         initiator_address = b'\x00'*8
                         acceptor_address = b'\x00'*8
 
                         # https://datatracker.ietf.org/doc/html/rfc5929#section-4
-                        application_data_raw = b'tls-server-end-point:' + peer_certificate_sha256
+                        application_data_raw = b'tls-server-end-point:' + peer_certificate_digest
                         len_application_data = len(application_data_raw).to_bytes(4, byteorder='little', signed = False)
                         application_data = len_application_data
                         application_data += application_data_raw
@@ -1424,6 +1445,7 @@ class Connection(object):
 
                         # https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/83f5e789-660d-4781-8491-5f8c6641f75e
                         # "The Value field contains an MD5 hash of a gss_channel_bindings_struct"
+                        from hashlib import md5
                         self.ntlm_client.client_av_channel_bindings = md5(channel_binding_struct).digest()
 
                     # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx

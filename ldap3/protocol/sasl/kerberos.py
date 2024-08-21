@@ -27,6 +27,7 @@
 # it needs the gssapi package
 import base64
 import socket
+import struct
 
 from ...core.exceptions import LDAPPackageUnavailableError, LDAPCommunicationError
 from ...core.rdns import ReverseDnsSetting, get_hostname_by_addr, is_ip_addr
@@ -196,8 +197,6 @@ def _common_process_end_token_get_security_layers(negotiated_token, session_secu
     """ Process the response we got at the end of our SASL negotiation wherein the server told us what
     minimum security layers we need, and return a bytearray for the client security layers we want.
     This function throws an error on a malformed token from the server.
-    The ldap3 library does not support security layers, and only supports authentication with kerberos,
-    so an error will be thrown for any tokens that indicate a security layer requirement.
     """
     if len(negotiated_token) != 4:
         raise LDAPCommunicationError("Incorrect response from server")
@@ -212,10 +211,17 @@ def _common_process_end_token_get_security_layers(negotiated_token, session_secu
     if not (server_security_layers & security_layer):
         raise LDAPCommunicationError("Server doesn't support the security level asked")
 
-    # this is here to encourage anyone implementing client security layers to do it
-    # for both windows and posix
-    client_security_layers = bytearray([security_layer, 0, 0, 0])
-    return client_security_layers
+    max_output_size_bytes = negotiated_token[1:4]
+    # We need to pod the data as struct unpack expects a 32-bit value
+    krb_wrap_size_limit = struct.unpack('!I', b'\x00' + max_output_size_bytes)[0]
+
+    # match the server max buffer size if we have client security layers configured
+    if security_layer == CONFIDENTIALITY_PROTECTION:
+        client_security_layers = bytearray([security_layer, negotiated_token[1], negotiated_token[2], negotiated_token[3]])
+    else:
+        client_security_layers = bytearray([security_layer, 0, 0, 0])
+    return client_security_layers, krb_wrap_size_limit
+
 
 def _posix_sasl_gssapi(connection, controls):
     """ Performs a bind using the Kerberos v5 ("GSSAPI") SASL mechanism
@@ -245,9 +251,10 @@ def _posix_sasl_gssapi(connection, controls):
                 pass
 
         unwrapped_token = ctx.unwrap(in_token)
-        client_security_layers = _common_process_end_token_get_security_layers(unwrapped_token.message, connection.session_security)
+        client_security_layers, krb_wrap_size_limit = _common_process_end_token_get_security_layers(unwrapped_token.message, connection.session_security)
         out_token = ctx.wrap(bytes(client_security_layers)+authz_id, False)
         connection.krb_ctx = ctx
+        connection.krb_wrap_size_limit = krb_wrap_size_limit
         return send_sasl_negotiation(connection, controls, out_token.message)
     except (gssapi.exceptions.GSSError, LDAPCommunicationError):
         abort_sasl_negotiation(connection, controls)
@@ -291,13 +298,14 @@ def _windows_sasl_gssapi(connection, controls):
         negotiated_token = ''
         if winkerberos.authGSSClientResponse(ctx):
             negotiated_token = base64.standard_b64decode(winkerberos.authGSSClientResponse(ctx))
-        client_security_layers = _common_process_end_token_get_security_layers(negotiated_token, connection.session_security)
+        client_security_layers, krb_wrap_size_limit = _common_process_end_token_get_security_layers(negotiated_token, connection.session_security)
         # manually construct a message indicating use of authorization-only layer
         # see winkerberos example: https://github.com/mongodb/winkerberos/blob/master/test/test_winkerberos.py
         authz_only_msg = base64.b64encode(bytes(client_security_layers) + authz_id).decode('utf-8')
         winkerberos.authGSSClientWrap(ctx, authz_only_msg)
         out_token = winkerberos.authGSSClientResponse(ctx) or ''
         connection.krb_ctx = ctx
+        connection.krb_wrap_size_limit = krb_wrap_size_limit
         return send_sasl_negotiation(connection, controls, base64.b64decode(out_token))
     except (winkerberos.GSSError, LDAPCommunicationError):
         abort_sasl_negotiation(connection, controls)

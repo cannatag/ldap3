@@ -297,6 +297,7 @@ class Connection(object):
             self._digest_md5_kcs_cipher = None
             self._digest_md5_sec_num = 0
             self.krb_ctx = None
+            self.krb_wrap_size_limit = None
 
             if session_security and not (self.authentication == NTLM or self.sasl_mechanism == GSSAPI):
                 self.last_error = '"session_security" option only available for NTLM and GSSAPI'

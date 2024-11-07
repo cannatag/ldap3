@@ -80,7 +80,32 @@ class Tls(object):
                  local_private_key_password=None,
                  ciphers=None,
                  sni=None,
-                 peer_certificate=None):
+                 peer_certificate=None,
+                 custom_ssl_context=None):
+        if custom_ssl_context is not None:
+            if not use_ssl_context:
+                if log_enabled(ERROR):
+                    log(ERROR, 'cannot use custom_ssl_context, SSLContext not available')
+                raise LDAPSSLNotSupportedError('cannot use custom_ssl_context, SSLContext not available')
+            if not is instance(custom_ssl_context, ssl.SSLContext):
+                if log_enabled(ERROR):
+                    log(ERROR, 'custom_ssl_context must be an ssl.SSLContext object')
+                raise LDAPSSLNotSupportedError('custom_ssl_context must be an ssl.SSLContext object')
+            if not (local_private_key_file is None and
+                 local_certificate_file is None and
+                 validate == ssl.CERT_NONE and
+                 version is None and
+                 ssl_options is None and
+                 ca_certs_file is None and
+                 ca_certs_path is None and
+                 ca_certs_data is None and
+                 local_private_key_password is None and
+                 ciphers is None and
+                 peer_certificate is None):
+                 if log_enabled(ERROR):
+                     log(ERROR, 'cannot specify other parameters when using custom_ssl_context (except for sni and valid_names)')
+                 raise LDAPSSLConfigurationError('cannot specify other parameters when using custom_ssl_context (except for sni and valid_names)')
+        self.custom_ssl_context = custom_ssl_context     
         if ssl_options is None:
             ssl_options = []
         self.ssl_options = ssl_options
@@ -152,7 +177,8 @@ class Tls(object):
             'verify mode: ' + str(self.validate),
             'valid names: ' + str(self.valid_names),
             'ciphers: ' + str(self.ciphers),
-            'sni: ' + str(self.sni)
+            'sni: ' + str(self.sni),
+            'custom_ssl_context: ' + ('present ' if self.custom_ssl_context else 'not present')
         ]
         return ' - '.join(s)
 
@@ -166,6 +192,7 @@ class Tls(object):
         r += '' if self.ca_certs_data is None else ', ca_certs_data={0.ca_certs_data!r}'.format(self)
         r += '' if self.ciphers is None else ', ciphers={0.ciphers!r}'.format(self)
         r += '' if self.sni is None else ', sni={0.sni!r}'.format(self)
+        r += '' if self.custom_ssl_context is None else ', custom_ssl_context={0.custom_ssl_context!r}'.format(self)
         r = 'Tls(' + r[2:] + ')'
         return r
 
@@ -173,7 +200,16 @@ class Tls(object):
         """
         Adds TLS to the connection socket
         """
-        if use_ssl_context:
+        if self.custom_ssl_context is not None:
+            ssl_context = self.custom_ssl_context
+            if self.sni:
+                wrapped_socket = ssl_context.wrap_socket(connection.socket, server_side=False, do_handshake_on_connect=do_handshake, server_hostname=self.sni)
+            else:
+                wrapped_socket = ssl_context.wrap_socket(connection.socket, server_side=False, do_handshake_on_connect=do_handshake)
+            self.validate = ssl_context.verify_mode
+            if log_enabled(NETWORK):
+                log(NETWORK, 'socket wrapped with SSL using custom SSLContext for <%s>', connection)            
+        elif use_ssl_context:
             if self.version is None:  # uses the default ssl context for reasonable security
                 ssl_context = create_default_context(purpose=Purpose.SERVER_AUTH,
                                                      cafile=self.ca_certs_file,

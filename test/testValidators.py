@@ -3,6 +3,8 @@ from datetime import datetime
 
 from ldap3.protocol.formatters.validators import validate_integer, validate_boolean, validate_bytes, validate_generic_single_value, validate_time, validate_zero_and_minus_one_and_positive_int
 from ldap3.core.timezone import OffsetTzInfo
+from ldap3.utils.port_validators import check_port, check_port_and_port_list
+
 
 class Test(unittest.TestCase):
     def test_int_validator_valid_number(self):
@@ -202,3 +204,17 @@ class Test(unittest.TestCase):
         self.assertTrue(validated)
         validated = validate_zero_and_minus_one_and_positive_int('-2')
         self.assertFalse(validated)
+
+    def test_check_port(self):
+        assert check_port("0") == 'Source port must be an integer'
+        assert check_port(0) is None
+        assert check_port(65535) is None
+        assert check_port(-1) == 'Source port must in range from 0 to 65535'
+        assert check_port(65536) == 'Source port must in range from 0 to 65535'
+
+    def test_check_port_and_port_list(self):
+        assert check_port_and_port_list("0", None) == 'Source port must be an integer'
+        assert check_port_and_port_list(0, None) is None
+        assert check_port_and_port_list(65535, None) is None
+        assert check_port_and_port_list(-1, None) == 'Source port must in range from 0 to 65535'
+        assert check_port_and_port_list(65536, None) == 'Source port must in range from 0 to 65535'

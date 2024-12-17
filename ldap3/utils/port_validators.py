@@ -4,7 +4,7 @@
 def check_port(port):
     """ Check if a port is valid. Return an error message indicating what is invalid if something isn't valid. """
     if isinstance(port, int):
-        if port not in range(0, 65535):
+        if port not in range(0, 65536):
             return 'Source port must in range from 0 to 65535'
     else:
         return 'Source port must be an integer'
@@ -20,7 +20,7 @@ def check_port_and_port_list(port, port_list):
         return 'Cannot specify both a source port and a source port list'
     elif port is not None:
         if isinstance(port, int):
-            if port not in range(0, 65535):
+            if port not in range(0, 65536):
                 return 'Source port must in range from 0 to 65535'
         else:
             return 'Source port must be an integer'

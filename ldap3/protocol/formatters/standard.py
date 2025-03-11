@@ -30,7 +30,7 @@ from .formatters import format_ad_timestamp, format_binary, format_boolean,\
 from .validators import validate_integer, validate_time, always_valid,\
     validate_generic_single_value, validate_boolean, validate_ad_timestamp, validate_sid,\
     validate_uuid_le, validate_uuid, validate_zero_and_minus_one_and_positive_int, validate_guid, validate_time_with_0_year,\
-    validate_ad_timedelta
+    validate_ad_timedelta, validate_postal
 
 # for each syntax can be specified a format function and a input validation function
 
@@ -82,7 +82,7 @@ standard_formatter = {
     '1.3.6.1.4.1.1466.115.121.1.38': (format_unicode, None),  # OID
     '1.3.6.1.4.1.1466.115.121.1.39': (format_unicode, None),  # Other mailbox
     '1.3.6.1.4.1.1466.115.121.1.40': (format_binary, None),  # Octet string
-    '1.3.6.1.4.1.1466.115.121.1.41': (format_postal, None),  # Postal address
+    '1.3.6.1.4.1.1466.115.121.1.41': (format_postal, validate_postal),  # Postal address
     '1.3.6.1.4.1.1466.115.121.1.42': (format_binary, None),  # Protocol Information [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.43': (format_binary, None),  # Presentation Address [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.44': (format_unicode, None),  # Printable string

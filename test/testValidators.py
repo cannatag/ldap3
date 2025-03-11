@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from ldap3.protocol.formatters.validators import validate_integer, validate_boolean, validate_bytes, validate_generic_single_value, validate_time, validate_zero_and_minus_one_and_positive_int
+from ldap3.protocol.formatters.validators import validate_integer, validate_boolean, validate_bytes, validate_generic_single_value, validate_time, validate_zero_and_minus_one_and_positive_int, validate_postal
 from ldap3.core.timezone import OffsetTzInfo
 
 class Test(unittest.TestCase):
@@ -202,3 +202,24 @@ class Test(unittest.TestCase):
         self.assertTrue(validated)
         validated = validate_zero_and_minus_one_and_positive_int('-2')
         self.assertFalse(validated)
+
+    def test_postal_validator_trivial(self):
+        self.assertTrue(validate_postal('abc'))
+        self.assertTrue(validate_postal(['abc', 'def', 'ghi']))
+        self.assertFalse(validate_postal(123))
+        self.assertFalse(validate_postal(['abc', 123, 'ghi']))
+
+    def test_postal_validator_escaped(self):
+        self.assertEqual(validate_postal('\n'), '$')
+        self.assertEqual(validate_postal('$'), r'\24')
+        self.assertEqual(validate_postal('\\'), r'\5C')
+        self.assertEqual(validate_postal(['\n', '$', '\\']), ['$', r'\24', r'\5C'])
+        self.assertEqual(validate_postal(['abc', '\n', 'def']), ['abc', '$', 'def'])
+
+    def test_postal_validator_rfc_examples(self):
+        self.assertEqual(
+            validate_postal('1234 Main St.\nAnytown, CA 12345\nUSA'),
+            r'1234 Main St.$Anytown, CA 12345$USA')
+        self.assertEqual(
+            validate_postal('$1,000,000 Sweepstakes\nPO Box 1000000\nAnytown, CA 12345\nUSA'),
+            r'\241,000,000 Sweepstakes$PO Box 1000000$Anytown, CA 12345$USA')

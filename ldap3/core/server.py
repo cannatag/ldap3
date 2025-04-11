@@ -142,7 +142,7 @@ class Server(object):
             raise LDAPInvalidServerError()
 
         if not self.ipc:
-            self.host.rstrip('/')
+            self.host = self.host.rstrip('/')
             if not use_ssl and not port:
                 port = 389
             elif use_ssl and not port:

@@ -1,9 +1,13 @@
 import unittest
 from datetime import datetime
+from uuid import UUID
 
-from ldap3.protocol.formatters.validators import validate_integer, validate_boolean, validate_bytes, validate_generic_single_value, validate_time, validate_zero_and_minus_one_and_positive_int
+from ldap3.protocol.formatters.validators import validate_integer, validate_boolean, validate_bytes, validate_generic_single_value, validate_time, validate_zero_and_minus_one_and_positive_int, validate_uuid_le
 from ldap3.core.timezone import OffsetTzInfo
 from ldap3.utils.port_validators import check_port, check_port_and_port_list
+
+
+from ldap3.protocol.convert import prepare_filter_for_sending
 
 
 class Test(unittest.TestCase):
@@ -205,6 +209,7 @@ class Test(unittest.TestCase):
         validated = validate_zero_and_minus_one_and_positive_int('-2')
         self.assertFalse(validated)
 
+
     def test_check_port(self):
         assert check_port("0") == 'Source port must be an integer'
         assert check_port(0) is None
@@ -218,3 +223,40 @@ class Test(unittest.TestCase):
         assert check_port_and_port_list(65535, None) is None
         assert check_port_and_port_list(-1, None) == 'Source port must in range from 0 to 65535'
         assert check_port_and_port_list(65536, None) == 'Source port must in range from 0 to 65535'
+
+    def test_validate_uuid_le_no_5C(self):
+        uuid_str = '86f66df5-9b0e-4f7d-a6ef-1b897469dcaa'
+        validated = validate_uuid_le(uuid_str)
+        self.assertEqual(validated, UUID(hex=uuid_str).bytes_le)
+
+        uuid_str = '{86f66df5-9b0e-4f7d-a6ef-1b897469dcaa}'
+        validated = validate_uuid_le(uuid_str)
+        self.assertEqual(validated, UUID(hex=uuid_str).bytes_le)
+
+        uuid_str = '86f66df5-9b0e-4f7d-a6ef-1b897469dcaa'
+        validated = validate_uuid_le("\\f5\\6d\\f6\\86\\0e\\9b\\7d\\4f\\a6\\ef\\1b\\89\\74\\69\\dc\\aa")
+        self.assertEqual(validated, UUID(hex=uuid_str).bytes_le)
+
+    def test_validate_uuid_le_5C_no_valid_hex(self):
+        # Issue #894
+        uuid_str = '1f3e2261-b35c-4065-98e3-3c243f695446'
+        validated = validate_uuid_le(uuid_str)
+        self.assertEqual(validated, UUID(hex=uuid_str).bytes_le)
+
+    def test_validate_uuid_le_5C_valid_hex(self):
+        # Issue #1000, but 0x4143 -> AD -> happens to be a valid hex number
+        uuid_str = 'db6ffb06-5c7e-4341-a899-7eda79866582'
+        validated = validate_uuid_le(uuid_str)
+        self.assertEqual(validated, UUID(hex=uuid_str).bytes_le)
+
+    def test_validate_uuid_le_5C_valid_hex_prepared(self):
+        # Issue #1000, prepare_filter_for_sending applied
+        uuid_str = 'db6ffb06-5c7e-4341-a899-7eda79866582'
+        validated = prepare_filter_for_sending(validate_uuid_le(uuid_str))
+        self.assertEqual(validated, UUID(hex=uuid_str).bytes_le)
+
+    def test_validate_uuid_le_5C_outofrange_hex_prepared(self):
+        # Issue #1000, but 0x2D43 -> -C -> happens to be a invalid (negative) hex number
+        uuid_str = 'db6ffb06-5c7e-432d-a899-7eda79866582'
+        validated = prepare_filter_for_sending(validate_uuid_le(uuid_str))
+        self.assertEqual(validated, UUID(hex=uuid_str).bytes_le)

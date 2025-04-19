@@ -198,17 +198,10 @@ def prepare_filter_for_sending(raw_string):
     ints = []
     raw_string = to_raw(raw_string)
     while i < len(raw_string):
-        if (raw_string[i] == 92 or raw_string[i] == '\\') and i < len(raw_string) - 2:  # 92 (0x5C) is backslash
-            try:
-                ints.append(int(raw_string[i + 1: i + 3], 16))
-                i += 2
-            except ValueError:  # not an ldap escaped value, sends as is
-                ints.append(92)  # adds backslash
-        else:
-            if str is not bytes:  # Python 3
-                ints.append(raw_string[i])
-            else:  # Python 2
-                ints.append(ord(raw_string[i]))
+        if str is not bytes:  # Python 3
+            ints.append(raw_string[i])
+        else:  # Python 2
+            ints.append(ord(raw_string[i]))
         i += 1
 
     if str is not bytes:  # Python 3

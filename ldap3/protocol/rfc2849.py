@@ -34,8 +34,6 @@ from ..utils.config import get_config_parameter
 
 # LDIF converter RFC 2849 compliant
 
-conf_ldif_line_length = get_config_parameter('LDIF_LINE_LENGTH')
-
 
 def safe_ldif_string(bytes_value):
     if not bytes_value:
@@ -229,6 +227,8 @@ def operation_to_ldif(operation_type, entries, all_base64=False, sort_order=None
         lines = modify_dn_request_to_ldif(entries, all_base64, sort_order)
     else:
         lines = []
+
+    conf_ldif_line_length = get_config_parameter('LDIF_LINE_LENGTH')
 
     ldif_record = []
     # check max line length and split as per note 2 of RFC 2849

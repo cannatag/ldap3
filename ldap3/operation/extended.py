@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2013 - 2020 Giovanni Cannata
+# Copyright 2013 - 2025 Giovanni Cannata
 #
 # This file is part of ldap3.
 #

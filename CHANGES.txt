@@ -1,3 +1,19 @@
+# 2.10.2 . 2025.04.19
+    - tested against Python 3.13
+    - moved to pyproject.toml build
+    - fix requirements.txt for Linux/Windows environments
+    - RESTARTABLE_TRIES set to 3 (instead of 30)
+    - added Microsoft FastBind extended operation
+    - fixed CBT computing when cert digest algo is not MD5, SHA1 or SHA256
+    - fixed grammar and sentence structure in docs
+    - correctly handle GSSAPI SASL negotiated max buffer size as per RFC4752
+    - fixed LDIF_LINE_LENGTH issue
+    - fixed parsing of objectGUIDs containing the byte 5C
+    - fixed bug where trailing slashes are not stripped
+    - added modify support for the RFC 4517 Postal Address format
+    - fixed excluded port number 65535
+
+
 # 2.10.1 - 2024.03.20
     - tested against Python 3.11
     - fixed multiple issues

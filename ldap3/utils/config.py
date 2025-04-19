@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2013 - 2020 Giovanni Cannata
+# Copyright 2013 - 2025 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -82,7 +82,7 @@ _SOCKET_SIZE = 4096  # socket byte size
 _CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability
 _RESET_AVAILABILITY_TIMEOUT = 5  # default timeout for resetting the availability status when checking candidate addresses
 _RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retrying the request
-_RESTARTABLE_TRIES = 30  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
+_RESTARTABLE_TRIES = 3  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
 _REUSABLE_THREADED_POOL_SIZE = 5
 _REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 _DEFAULT_THREADED_POOL_NAME = 'REUSABLE_DEFAULT_POOL'

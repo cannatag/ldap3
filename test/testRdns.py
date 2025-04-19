@@ -4,7 +4,7 @@
 #
 # Author: Azaria Zornberg
 #
-# Copyright 2020 Giovanni Cannata
+# Copyright 2025 Giovanni Cannata
 # Copyright 2020 Azaria Zornberg
 #
 # This file is part of ldap3.

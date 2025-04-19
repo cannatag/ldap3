@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ldap3"
+version = "2.10.2rc1"
+authors = [
+  { name="Giovanni Cannata", email="cannatag@gmail.com" },
+]
+description = "A pure Python LDAPv3 client library strictly conforming to RFC 4510"
+readme = "README.rst"
+requires-python = ">=3.4"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    'Development Status :: 5 - Production/Stable'
+]
+dependencies = [
+    "pyasn1>=0.4.6",
+    "pycryptodomex",
+]
+
+optional-dependencies = [
+    "winkerberos; os_name == 'nt'",
+    "gssapi; os_name != 'nt'",
+]
+
+license = "LGPL-3.0-or-later"
+license-files = ["LICENSE.txt", "COPYING.txt", "COPYING.LESSER.txt"]
+
+[project.urls]
+Homepage = "https://github.com/cannatag/ldap3"
+Issues = "https://github.com/cannatag/ldap3/issues"

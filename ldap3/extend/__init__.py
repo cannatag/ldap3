@@ -32,6 +32,7 @@ from .microsoft.unlockAccount import ad_unlock_account
 from .microsoft.addMembersToGroups import ad_add_members_to_groups
 from .microsoft.removeMembersFromGroups import ad_remove_members_from_groups
 from .microsoft.persistentSearch import ADPersistentSearch
+from .microsoft.fastBind import FastBind
 from .novell.partition_entry_count import PartitionEntryCount
 from .novell.replicaInfo import ReplicaInfo
 from .novell.listReplicas import ListReplicas
@@ -284,6 +285,9 @@ class MicrosoftExtendedOperations(ExtendedOperationContainer):
                        incremental_values=incremental_values,
                        max_length=max_length,
                        hex_guid=hex_guid)
+
+    def fast_bind(self, controls=None):
+        return FastBind(self._connection, controls).send()
 
     def modify_password(self, user, new_password, old_password=None, controls=None):
         return ad_modify_password(self._connection,

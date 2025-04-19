@@ -12,16 +12,12 @@ RFC4510 is the current LDAP specification (June 2006) from IETF and obsoletes th
 ldap3 can be used with any Python version starting from 2.6, including all Python 3 versions. It also works with PyPy and PyPy3.
 
 
-.. warning::
-   ldap3 versioning follows `SemVer`_. In version 2 the public API has slightly changed from version 1: some default values have been changed
-   and the ldap3 namespace has been decluttered, removing redundant constants (look at the changelog for details). Also, the result code
-   constants were moved to ldap3.core.results and the ldap3 custom exceptions were stored in ldap3.core.exceptions. If you experience
-   errors in older code you should rearrange the import statements or explicitly set the defaults to their former values.
-
-   .. _SemVer: http://semver.org
-
-
 .. note::
+   ldap3 versioning follows `SemVer`_.
+.. _SemVer: http://semver.org
+
+
+.. warning::
    Thread safe strategies
 
    In multithreaded programs you must use one of **SAFE_SYNC** (synchronous connection strategy), **SAFE_RESTARTABLE** (restartable syncronous connection strategy) or **ASYNC** (asynchronous connection strategy).

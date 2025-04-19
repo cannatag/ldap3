@@ -167,14 +167,13 @@ Keep in mind that LDAP support a (quite obscure) "multi-rdn" naming option where
 
 Update an entry
 ===============
-To change the attributes of an object you must use the Modify operation. There are three kinds of modifications in LDAP: add, delete and replace.
-**Add** is used to add values to an attribute, and creates the attribute if it doesn't exist. **Delete** deletes values from an attribute and if no values are listed, or if all
+To change the attributes of an object, you must use the Modify operation. LDAP has three kinds of modifications: add, delete, and replace.
+**Add** adds values to an attribute and creates the attribute if it doesn't exist. **Delete** deletes values from an attribute, and if no values are listed or all
 current values are listed, remove the entire attribute. **Replace** replaces all existing values of an attribute with some new values, creating the attribute if it
-don't already exist.  A replace with no value will delete the entire attribute if it exists, and it is ignored if the attribute doesn't exist.
+doesn't already exist.  A **Replace** with no value will delete the entire attribute if it exists, and it is ignored if the attribute doesn't exist.
 
 The hard part in the Modify operation is that you can mix in a single operation the three kinds of modification for a single entry with one or more attributes
-each with one or more values! So the Modify operation syntax is quite complex: you must provide a DN, a dictionary of attributes and for each
-attribute a list of modifications where each modification is a tuple with the modification type and the list of values. Let's add a new value to the sn attribute::
+each with one or more values! So, the Modify operation syntax is quite complex: you must provide a DN, a dictionary of attributes, and a list of modifications for each attribute; each modification is a tuple with the modification type and the list of values. Let's add a new value to the sn attribute::
 
     >>> from ldap3 import MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
     >>> conn.modify('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_ADD, ['Smyth'])]})

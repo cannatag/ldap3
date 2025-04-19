@@ -22,6 +22,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
+
+import re
+
 from binascii import a2b_hex, hexlify
 from datetime import datetime
 from calendar import timegm
@@ -478,6 +481,52 @@ def validate_sid(input_value):
                     sid_bytes += pack('<q', int(sub_auth))[0:4]  # sub-authorities
                 valid_values.append(sid_bytes)
                 changed = True
+
+    if changed:
+        if sequence:
+            return valid_values
+        else:
+            return valid_values[0]
+    else:
+        return True
+
+
+def validate_postal(input_value):
+    """
+    RFC 4517 Postal Address
+
+    PostalAddress = line *( DOLLAR line )
+    line          = 1*line-char
+    line-char     = %x00-23
+                    / (%x5C "24")  ; escaped "$"
+                    / %x25-5B
+                    / (%x5C "5C")  ; escaped "\"
+                    / %x5D-7F
+                    / UTFMB
+    """
+    escape_pattern = re.compile(r'(\\)|(\$)|''(\n)')
+    escape_replace = (None, r'\5C', r'\24', '$')
+    def escape(match):
+        return escape_replace[match.lastindex]
+
+    if not isinstance(input_value, SEQUENCE_TYPES):
+        sequence = False
+        input_value = [input_value]
+    else:
+        sequence = True  # indicates if a sequence must be returned
+
+    valid_values = []
+    changed = False
+    for element in input_value:
+        if str is not bytes and isinstance(element, bytes):  # python3 try to converts bytes to string
+            element = to_unicode(element)
+        if isinstance(element, STRING_TYPES):
+            escaped = escape_pattern.sub(escape, element)
+            valid_values.append(escaped)
+            if escaped != element:
+                changed = True
+        else:
+            return False
 
     if changed:
         if sequence:

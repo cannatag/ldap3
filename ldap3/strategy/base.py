@@ -902,14 +902,30 @@ class BaseStrategy(object):
                 if self.connection.authentication == NTLM:
                     # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/115f9c7d-bc30-4262-ae96-254555c14ea6
                     encoded_message = self.connection.ntlm_client.seal(encoded_message)
+                    encoded_message = int(len(encoded_message)).to_bytes(4, 'big') + encoded_message
                 elif self.connection.sasl_mechanism == GSSAPI:
+                    # winkerberos does not support GSS_WRAP_size_limit
                     if posix_gssapi_unavailable:
                         import winkerberos
                         winkerberos.authGSSClientWrap(self.connection.krb_ctx, base64.b64encode(encoded_message).decode('utf-8'), None, 1)
                         encoded_message = base64.b64decode(winkerberos.authGSSClientResponse(self.connection.krb_ctx))
+                        encoded_message = int(len(encoded_message)).to_bytes(4, 'big') + encoded_message
                     else:
-                        encoded_message = self.connection.krb_ctx.wrap(encoded_message, True).message
-                encoded_message = int(len(encoded_message)).to_bytes(4, 'big') + encoded_message
+                        krb_wrap_size_limit = self.connection.krb_ctx.get_wrap_size_limit(self.connection.krb_wrap_size_limit - 4)
+
+                        offset = 0
+                        wrapped_messages = b''
+                        while offset < len(encoded_message):
+                            chunk_size = min(krb_wrap_size_limit, len(encoded_message) - offset)
+                            message_chunk = encoded_message[offset:offset + chunk_size]
+                            wrapped_message = self.connection.krb_ctx.wrap(message_chunk, True).message
+                            wrapped_message = int(len(wrapped_message)).to_bytes(4, 'big') + wrapped_message
+    
+                            wrapped_messages = wrapped_messages + wrapped_message
+    
+                            offset += chunk_size
+
+                        encoded_message = wrapped_messages
 
             self.connection.socket.sendall(encoded_message)
             if log_enabled(EXTENDED):

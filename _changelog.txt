@@ -432,7 +432,7 @@
     - compatibility constants removed
     - exceptions removed from ldap3 namespace, defined in ldap3.core.exceptions only
     - ADDRESS_INFO_REFRESH_TIME is now configurable via set_config_parameter
-    - Operational attribute prefix set to 'OA_'
+    - Operational attribute prefix set to OA_
     - Allows cert and key file in the same file (thanks Jan-Philip)
     - Removed logging info when logging is disabled (thanks Dan)
     - Updated copyright notice

@@ -48,7 +48,8 @@ if posix_gssapi_unavailable:
         import winkerberos
         windows_gssapi_unavailable = False
     except ImportError:
-        raise LDAPPackageUnavailableError('package gssapi (or winkerberos) missing')
+        pass
+        # raise LDAPPackageUnavailableError('package gssapi (or winkerberos) missing')
 
 from .sasl import send_sasl_negotiation, abort_sasl_negotiation
 
@@ -184,8 +185,8 @@ def _common_determine_authz_id_and_creds(connection):
             authz_id = connection.sasl_credentials[1].encode("utf-8")
         if len(connection.sasl_credentials) >= 3 and connection.sasl_credentials[2]:
             if posix_gssapi_unavailable:
-                raise LDAPPackageUnavailableError('The winkerberos package does not support specifying raw  credentials'
-                                                  'to initiate GSSAPI Kerberos communication. A ticket granting ticket '
+                raise LDAPPackageUnavailableError('The winkerberos package does not support specifying raw credentials'
+                                                  'to initiate GSSAPI Kerberos communication. A ticket granting ticket'
                                                   'must have already been obtained for the user before beginning a '
                                                   'SASL bind.')
             raw_creds = connection.sasl_credentials[2]

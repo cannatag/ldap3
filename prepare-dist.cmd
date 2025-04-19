@@ -1,1 +1,1 @@
-venv\Scripts\python update_source.py
+CALL venv\Scripts\python update_source.py

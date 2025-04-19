@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ldap3"
-version = "2.10.2rc1"
+version = "2.10.2rc2"
 authors = [
   { name="Giovanni Cannata", email="cannatag@gmail.com" },
 ]
@@ -21,14 +21,13 @@ dependencies = [
     "pycryptodomex",
 ]
 
-optional-dependencies = [
-    "winkerberos; os_name == 'nt'",
-    "gssapi; os_name != 'nt'",
-]
-
 license = "LGPL-3.0-or-later"
 license-files = ["LICENSE.txt", "COPYING.txt", "COPYING.LESSER.txt"]
 
 [project.urls]
 Homepage = "https://github.com/cannatag/ldap3"
 Issues = "https://github.com/cannatag/ldap3/issues"
+
+[project.optional-dependencies]
+winkerberos = ["winkerberos"]
+gssapi = ["gssapi"]

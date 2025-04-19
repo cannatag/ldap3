@@ -12,9 +12,13 @@ install ldap3. Then you can download and install the ldap3 library directly from
 
     pip install ldap3
 
-This library has only one dependence on the *pyasn1* module, you can install it or let the installer do it for you.
+This library has two dependencies (the *pyasn1* module and the *pycryptodomex* module), you can install it or let the installer do it for you.
 
-If you need to access a server with the Kerberos SASL authentication mechanism you must install the *gssapi* package.
+
+If you need to access a server with the Kerberos SASL authentication mechanism you must install the *gssapi* or the *winkerberos* package with::
+
+    pip install ldap3[gssapi]
+    pip install ldap3[winkerberos]
 
 ldap3 includes a backport (from Python 3.4.3) of ``ssl.check_hostnames`` to be used on older
 (version < 2.7.10) Python version. If you want to use a more up to date version of the check_hostnames feature you can
@@ -27,8 +31,7 @@ Installation from the source
 
 You can download the latest source from https://github.com/cannatag/ldap3 then you can install the library with::
 
-    python setup.py install
-
+    python -m build
 
 Global configuration
 --------------------
@@ -42,7 +45,7 @@ in the **ldap3.utils.config** package there are some configurable settings:
 * CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability
 * RESET_AVAILABILITY_TIMEOUT = 5  # default timeout for resetting the availability status when checking candidate addresses
 * RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retrying the request
-* RESTARTABLE_TRIES = 30  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
+* RESTARTABLE_TRIES = 3  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
 * REUSABLE_THREADED_POOL_SIZE = 5
 * REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 * DEFAULT_THREADED_POOL_NAME = 'REUSABLE_DEFAULT_POOL'

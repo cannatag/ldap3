@@ -150,7 +150,7 @@ def set_library_log_activation_level(logging_level):
         raise ValueError('invalid library log activation level')
 
 
-def get_library_log_activation_lavel():
+def get_library_log_activation_level():
     return _logging_level
 
 

@@ -1,4 +1,4 @@
-# 2.10.2 . 2025.11.09
+# 2.10.2 . 2025.04.19
     - tested against Python 3.13
     - moved to pyproject.toml build
     - fix requirements.txt for Linux/Windows environments

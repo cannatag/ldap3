@@ -29,7 +29,7 @@ Thread safe strategies
 ----------------------
 
 In multithreaded programs you must use one of **SAFE_SYNC** (synchronous connection strategy), **SAFE_RESTARTABLE** (restartable syncronous connection strategy) or **ASYNC** (asynchronous connection strategy).
-   Each LDAP operation with SAFE_SYNC or SAFE_RESTARTABLE strategies returns a tuple of four elements: status, result, response and request.
+   Each LDAP operation with SAFE_SYNC or SAFE_RESTARTABLE strategies returns a tuple of four elements: status, result, response and request:
 
    * status: states if the operation was successful
 
@@ -136,4 +136,3 @@ Changelog
 ---------
 
 Updated changelog at https://ldap3.readthedocs.io/changelog.html
-

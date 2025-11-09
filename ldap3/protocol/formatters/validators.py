@@ -377,36 +377,39 @@ def validate_uuid_le(input_value):
     valid_values = []
     changed = False
     for element in input_value:
-        error = False
-        if isinstance(element, STRING_TYPES):
-            if element[0] == '{' and element[-1] == '}':
-                try:
-                    valid_values.append(UUID(hex=element).bytes_le)  # string representation, value in big endian, converts to little endian
-                    changed = True
-                except ValueError:
-                    error = True
-            elif '-' in element:
-                try:
-                    valid_values.append(UUID(hex=element).bytes_le)  # string representation, value in big endian, converts to little endian
-                    changed = True
-                except ValueError:
-                    error = True
-            elif '\\' in element:
-                try:
-                    valid_values.append(UUID(bytes_le=ldap_escape_to_bytes(element)).bytes_le)  # byte representation, value in little endian
-                    changed = True
-                except ValueError:
-                    error = True
-            elif '-' not in element:  # value in little endian
-                try:
-                    valid_values.append(UUID(bytes_le=a2b_hex(element)).bytes_le)  # packet representation, value in little endian, converts to little endian
-                    changed = True
-                except ValueError:
-                    error = True
-            if error and (str is bytes):  # python2 only assume value is bytes and valid
+        if element:
+            error = False
+            if isinstance(element, STRING_TYPES):
+                if element[0] == '{' and element[-1] == '}':
+                    try:
+                        valid_values.append(UUID(hex=element).bytes_le)  # string representation, value in big endian, converts to little endian
+                        changed = True
+                    except ValueError:
+                        error = True
+                elif '-' in element:
+                    try:
+                        valid_values.append(UUID(hex=element).bytes_le)  # string representation, value in big endian, converts to little endian
+                        changed = True
+                    except ValueError:
+                        error = True
+                elif '\\' in element:
+                    try:
+                        valid_values.append(UUID(bytes_le=ldap_escape_to_bytes(element)).bytes_le)  # byte representation, value in little endian
+                        changed = True
+                    except ValueError:
+                        error = True
+                elif '-' not in element:  # value in little endian
+                    try:
+                        valid_values.append(UUID(bytes_le=a2b_hex(element)).bytes_le)  # packet representation, value in little endian, converts to little endian
+                        changed = True
+                    except ValueError:
+                        error = True
+                if error and (str is bytes):  # python2 only assume value is bytes and valid
+                    valid_values.append(element)  # value is untouched, must be in little endian
+            elif isinstance(element, (bytes, bytearray)):  # assumes bytes are valid uuid
                 valid_values.append(element)  # value is untouched, must be in little endian
-        elif isinstance(element, (bytes, bytearray)):  # assumes bytes are valid uuid
-            valid_values.append(element)  # value is untouched, must be in little endian
+            else:
+                return False
         else:
             return False
 
@@ -470,18 +473,20 @@ def validate_sid(input_value):
     for element in input_value:
         if isinstance(element, STRING_TYPES):
             if element.startswith('S-'):
-                parts = element.split('-')
-                sid_bytes = pack('<q', int(parts[1]))[0:1]  # revision number
-                sid_bytes += pack('<q', len(parts[3:]))[0:1]  # number of sub authorities
-                if len(parts[2]) <= 10:
-                    sid_bytes += pack('>q', int(parts[2]))[2:]  # authority (in dec)
-                else:
-                    sid_bytes += pack('>q', int(parts[2], 16))[2:]  # authority (in hex)
-                for sub_auth in parts[3:]:
-                    sid_bytes += pack('<q', int(sub_auth))[0:4]  # sub-authorities
-                valid_values.append(sid_bytes)
-                changed = True
-
+                try:
+                    parts = element.split('-')
+                    sid_bytes = pack('<q', int(parts[1]))[0:1]  # revision number
+                    sid_bytes += pack('<q', len(parts[3:]))[0:1]  # number of sub authorities
+                    if len(parts[2]) <= 10:
+                        sid_bytes += pack('>q', int(parts[2]))[2:]  # authority (in dec)
+                    else:
+                        sid_bytes += pack('>q', int(parts[2], 16))[2:]  # authority (in hex)
+                    for sub_auth in parts[3:]:
+                        sid_bytes += pack('<q', int(sub_auth))[0:4]  # sub-authorities
+                    valid_values.append(sid_bytes)
+                    changed = True
+                except IndexError:
+                    return False
     if changed:
         if sequence:
             return valid_values

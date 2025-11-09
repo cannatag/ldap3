@@ -1,3 +1,6 @@
+# 2.10.3 . 2025.11.09
+    - fixed raise of wrong expection in validators
+
 # 2.10.2 . 2025.04.19
     - tested against Python 3.13
     - moved to pyproject.toml build

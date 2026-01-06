@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014 - 2025 Giovanni Cannata
+# Copyright 2014 - 2020 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -333,6 +333,7 @@ except ImportError:
         return raw_value
 
 
+
 def format_ad_timedelta(raw_value):
     """
     Convert a negative filetime value to a timedelta.
@@ -346,11 +347,20 @@ def format_ad_timedelta(raw_value):
     # In attributes like "maxPwdAge", this signifies never.
     if raw_value == b'-9223372036854775808':
         return timedelta.max
-    # We can reuse format_ad_timestamp to get a datetime object from the
-    # timestamp. Afterwards, we can subtract a datetime representing 0 hour on
-    # January 1, 1601 from the returned datetime to get the timedelta.
-    return format_ad_timestamp(raw_value) - format_ad_timestamp(0)
-
+    
+    # Fix: vérifier le type de retour avant soustraction
+    try:
+        timestamp = format_ad_timestamp(raw_value)
+        zero_time = format_ad_timestamp(0)
+        
+        # S'assurer que les deux sont des datetime avant la soustraction
+        if isinstance(timestamp, datetime) and isinstance(zero_time, datetime):
+            return timestamp - zero_time
+        # Si format_ad_timestamp retourne bytes, retourner raw_value
+        return raw_value
+    except Exception:
+        # En cas d'erreur, retourner la valeur brute
+        return raw_value
 
 def format_time_with_0_year(raw_value):
     try:
@@ -434,23 +444,3 @@ def format_sid(raw_value):
         pass
 
     return raw_value
-
-
-def format_postal(raw_value):
-    """
-    RFC 4517 Postal Address
-
-    PostalAddress = line *( DOLLAR line )
-    line          = 1*line-char
-    line-char     = %x00-23
-                    / (%x5C "24")  ; escaped "$"
-                    / %x25-5B
-                    / (%x5C "5C")  ; escaped "\"
-                    / %x5D-7F
-                    / UTFMB
-    """
-    escape_pattern = re.compile(br'(\$)|(\\24)|(\\5C)', re.IGNORECASE)
-    escape_replace = (None, b'\n', b'$', b'\\')
-    def unescape(match):
-        return escape_replace[match.lastindex]
-    return format_unicode(escape_pattern.sub(unescape, raw_value))

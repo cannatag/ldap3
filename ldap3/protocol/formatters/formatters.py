@@ -347,12 +347,12 @@ def format_ad_timedelta(raw_value):
     # In attributes like "maxPwdAge", this signifies never.
     if raw_value == b'-9223372036854775808':
         return timedelta.max
-    
+
     # Fix: vérifier le type de retour avant soustraction
     try:
         timestamp = format_ad_timestamp(raw_value)
         zero_time = format_ad_timestamp(0)
-        
+
         # S'assurer que les deux sont des datetime avant la soustraction
         if isinstance(timestamp, datetime) and isinstance(zero_time, datetime):
             return timestamp - zero_time

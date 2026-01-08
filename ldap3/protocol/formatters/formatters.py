@@ -347,21 +347,40 @@ def format_ad_timedelta(raw_value):
     # In attributes like "maxPwdAge", this signifies never.
     if raw_value == b'-9223372036854775808':
         return timedelta.max
-
-    # Fix: vérifier le type de retour avant soustraction
+    # Fix: verify return type before subtraction
     try:
         timestamp = format_ad_timestamp(raw_value)
         zero_time = format_ad_timestamp(0)
 
-        # S'assurer que les deux sont des datetime avant la soustraction
+        # Ensure both are datetime objects before subtraction
         if isinstance(timestamp, datetime) and isinstance(zero_time, datetime):
             return timestamp - zero_time
-        # Si format_ad_timestamp retourne bytes, retourner raw_value
+        # If format_ad_timestamp returns bytes, return raw_value
         return raw_value
     except Exception:
-        # En cas d'erreur, retourner la valeur brute
+        # In case of error, return raw value
         return raw_value
 
+def format_postal(raw_value):
+    """
+    RFC 4517 Postal Address
+    
+    PostalAddress = line *( DOLLAR line )
+    line          = 1*line-char
+    line-char     = %x00-23
+                    / (%x5C "24") ; escaped "$"
+                    / %x25-5B
+                    / (%x5C "5C") ; escaped "\"
+                    / %x5D-7F
+                    / UTFMB
+    """
+    escape_pattern = re.compile(br'(\$)|(\\24)|(\\5C)', re.IGNORECASE)
+    escape_replace = (None, b'\n', b'$', b'\\')
+    
+    def unescape(match):
+        return escape_replace[match.lastindex]
+    
+    return format_unicode(escape_pattern.sub(unescape, raw_value))
 def format_time_with_0_year(raw_value):
     try:
         if raw_value.startswith(b'0000'):

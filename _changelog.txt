@@ -1,4 +1,9 @@
-# 2.10.2 . 2025.04.19
+# 2.10.2rc4 . 2026.04.18
+    - fixed IndexError in auto_range search when response has no ranged attributes
+    - fixed TypeError in format_ad_timedelta with malformed AD timestamps
+    - Allow empty base for mocks
+
+# 2.10.2rc3 . 2025.04.19
     - tested against Python 3.13
     - moved to pyproject.toml build
     - fix requirements.txt for Linux/Windows environments

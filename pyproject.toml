@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ldap3"
-version = "2.10.2rc3"
+version = "2.10.2rc4"
 authors = [
   { name="Giovanni Cannata", email="cannatag@gmail.com" },
 ]

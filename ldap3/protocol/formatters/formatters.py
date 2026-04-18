@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014 - 2025 Giovanni Cannata
+# Copyright 2014 - 2020 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -333,6 +333,7 @@ except ImportError:
         return raw_value
 
 
+
 def format_ad_timedelta(raw_value):
     """
     Convert a negative filetime value to a timedelta.
@@ -346,12 +347,40 @@ def format_ad_timedelta(raw_value):
     # In attributes like "maxPwdAge", this signifies never.
     if raw_value == b'-9223372036854775808':
         return timedelta.max
-    # We can reuse format_ad_timestamp to get a datetime object from the
-    # timestamp. Afterwards, we can subtract a datetime representing 0 hour on
-    # January 1, 1601 from the returned datetime to get the timedelta.
-    return format_ad_timestamp(raw_value) - format_ad_timestamp(0)
+    # Fix: verify return type before subtraction
+    try:
+        timestamp = format_ad_timestamp(raw_value)
+        zero_time = format_ad_timestamp(0)
 
+        # Ensure both are datetime objects before subtraction
+        if isinstance(timestamp, datetime) and isinstance(zero_time, datetime):
+            return timestamp - zero_time
+        # If format_ad_timestamp returns bytes, return raw_value
+        return raw_value
+    except Exception:
+        # In case of error, return raw value
+        return raw_value
 
+def format_postal(raw_value):
+    """
+    RFC 4517 Postal Address
+    
+    PostalAddress = line *( DOLLAR line )
+    line          = 1*line-char
+    line-char     = %x00-23
+                    / (%x5C "24") ; escaped "$"
+                    / %x25-5B
+                    / (%x5C "5C") ; escaped "\"
+                    / %x5D-7F
+                    / UTFMB
+    """
+    escape_pattern = re.compile(br'(\$)|(\\24)|(\\5C)', re.IGNORECASE)
+    escape_replace = (None, b'\n', b'$', b'\\')
+    
+    def unescape(match):
+        return escape_replace[match.lastindex]
+    
+    return format_unicode(escape_pattern.sub(unescape, raw_value))
 def format_time_with_0_year(raw_value):
     try:
         if raw_value.startswith(b'0000'):
@@ -434,23 +463,3 @@ def format_sid(raw_value):
         pass
 
     return raw_value
-
-
-def format_postal(raw_value):
-    """
-    RFC 4517 Postal Address
-
-    PostalAddress = line *( DOLLAR line )
-    line          = 1*line-char
-    line-char     = %x00-23
-                    / (%x5C "24")  ; escaped "$"
-                    / %x25-5B
-                    / (%x5C "5C")  ; escaped "\"
-                    / %x5D-7F
-                    / UTFMB
-    """
-    escape_pattern = re.compile(br'(\$)|(\\24)|(\\5C)', re.IGNORECASE)
-    escape_replace = (None, b'\n', b'$', b'\\')
-    def unescape(match):
-        return escape_replace[match.lastindex]
-    return format_unicode(escape_pattern.sub(unescape, raw_value))

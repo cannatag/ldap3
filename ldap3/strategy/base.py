@@ -733,8 +733,12 @@ class BaseStrategy(object):
                     if requested_range in current_response['raw_attributes'] and len(current_response['raw_attributes'][requested_range]) == 0:
                         del current_response['raw_attributes'][requested_range]
                         del current_response['attributes'][requested_range]
-                    attr_name = list(filter(lambda a: ';range=' in a, current_response['raw_attributes'].keys()))[0]
-                    continue
+                    ranged_attr_names = list(filter(lambda a: ';range=' in a, current_response['raw_attributes'].keys()))
+                    if len(ranged_attr_names) == 0:
+                        done = True
+                    else:
+                        attr_name = ranged_attr_names[0]
+                        continue
             done = True
 
     def do_search_on_auto_range(self, request, response):

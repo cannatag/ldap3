@@ -664,7 +664,10 @@ class MockBaseStrategy(object):
 
     def _execute_search(self, request):
         responses = []
-        base = safe_dn(request['base'])
+        if request['base']:
+            base = safe_dn(request['base'])
+        else:
+            base = request['base']
         scope = request['scope']
         attributes = request['attributes']
         if '+' in attributes:  # operational attributes requested

@@ -98,12 +98,12 @@ def sasl_gssapi(connection, controls):
 
     - If None or False, use the hostname from the Server object.
     - If True, perform a reverse DNS lookup to retrieve the canonical hostname for the hosts IP address.
-    - If a string, the hostname to use.
+    - If a string, use it as hostname.
 
     The optional second element determines what authorization ID to request:
 
     - If omitted or None, the authentication ID is used as the authorization ID.
-    - If a string, the authorization ID to use. Should start with "dn:" or "user:".
+    - If a string, use it as authorization ID. Should start with "dn:" or "user:".
 
     If the third element is to be given, the second element cannot be ommitted.
 

@@ -107,8 +107,8 @@ def sasl_gssapi(connection, controls):
 
     If the third element is to be given, the second element cannot be ommitted.
 
-    The optional third element can be a raw gssapi credentials structure which will be instead of
-    the implicit use of a krb ccache.
+    The optional third element can be a raw gssapi credentials structure which will be used
+    instead of the implicit use of a krb ccache.
     """
     if not posix_gssapi_unavailable:
         return _posix_sasl_gssapi(connection, controls)

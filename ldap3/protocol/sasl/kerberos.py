@@ -89,22 +89,25 @@ def get_channel_bindings(ssl_socket):
 
 def sasl_gssapi(connection, controls):
     """
-    Performs a bind using the Kerberos v5 ("GSSAPI") SASL mechanism
-    from RFC 4752. Does not support any security layers, only authentication!
+    Performs a bind using the Kerberos v5 ("GSSAPI") SASL mechanism from RFC 4752.
+    Does not support any security layers, only authentication!
 
-    sasl_credentials can be empty or a tuple with one or two elements.
-    The first element determines which service principal to request a ticket for and can be one of the following:
+    sasl_credentials can be empty or a tuple with one, two or three elements.
 
-    - None or False, to use the hostname from the Server object
-    - True to perform a reverse DNS lookup to retrieve the canonical hostname for the hosts IP address
-    - A string containing the hostname
+    The first element determines which service principal to request a ticket for:
 
-    The optional second element is what authorization ID to request.
+    - If None or False, use the hostname from the Server object.
+    - If True, perform a reverse DNS lookup to retrieve the canonical hostname for the hosts IP address.
+    - If a string, the hostname to use.
 
-    - If omitted or None, the authentication ID is used as the authorization ID
+    The optional second element determines what authorization ID to request:
+
+    - If omitted or None, the authentication ID is used as the authorization ID.
     - If a string, the authorization ID to use. Should start with "dn:" or "user:".
 
-    The optional third element is a raw gssapi credentials structure which can be used over
+    If the third element is to be given, the second element cannot be ommitted.
+
+    The optional third element can be a raw gssapi credentials structure which will be instead of
     the implicit use of a krb ccache.
     """
     if not posix_gssapi_unavailable:
@@ -208,7 +211,7 @@ def _common_process_end_token_get_security_layers(negotiated_token, session_secu
     if server_security_layers in (0, NO_SECURITY_LAYER):
         if negotiated_token[1:] != '\x00\x00\x00':
             raise LDAPCommunicationError("Server max buffer size must be 0 if no security layer")
-    security_layer = CONFIDENTIALITY_PROTECTION if session_security else NO_SECURITY_LAYER 
+    security_layer = CONFIDENTIALITY_PROTECTION if session_security else NO_SECURITY_LAYER
     if not (server_security_layers & security_layer):
         raise LDAPCommunicationError("Server doesn't support the security level asked")
 

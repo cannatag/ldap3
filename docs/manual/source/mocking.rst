@@ -39,6 +39,13 @@ Then you can use the mock connection as a normal connection to an LDAP server.
     (either single or multi-valued). The password must be stored as cleartext. You cannot use the ``auto_bind`` parameter because the DIT is
     populated after the creation of the Connection object.
 
+.. hint::
+
+    If your json does not contain users, you can create one on the fly before calling ``bind()``::
+
+       connection.strategy.add_entry('cn=my_user,ou=test,o=lab', {'userPassword': 'my_password'})
+
+
 MockBaseStrategy supports the Bind, Unbind, Add, Modify, ModifyDn, Compare, Delete and Search operations (except for the
 extensible match). Abandon and Extended are not supported.
 

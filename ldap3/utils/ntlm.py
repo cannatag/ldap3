@@ -498,7 +498,7 @@ class NtlmClient(object):
         temp += self.server_target_info_raw
         temp += pack('<I', 0)  # Z(4)
         response_key_nt = self.ntowf_v2()
-        nt_proof_str = hmac.new(response_key_nt, self.server_challenge + temp, digestmod=hashlib.md5).digest()
+        nt_proof_str = hmac.new(response_key_nt, self.server_challenge + temp, digestmod=CryptodomeHMD5).digest()
         nt_challenge_response = nt_proof_str + temp
         if self.confidentiality:
             self.exported_session_key = self._kxkey(response_key_nt, nt_proof_str)
@@ -512,28 +512,28 @@ class NtlmClient(object):
             # The specified password is an LM:NTLM hash
             password_digest = binascii.unhexlify(passparts[1])
         else:
-            from Cryptodome.Hash import MD4
+            from Cryptodome.Hash import MD4, MD5 as CryptodomeHMD5
             password_digest = MD4.new(self._password.encode('utf-16-le')).digest()
-        return hmac.new(password_digest, (self.user_name.upper() + self.user_domain).encode('utf-16-le'), digestmod=hashlib.md5).digest()
+        return hmac.new(password_digest, (self.user_name.upper() + self.user_domain).encode('utf-16-le'), digestmod=CryptodomeHMD5).digest()
 
     def _kxkey(self, response_key_nt, nt_proof_str):
         # SessionBaseKey for NTLM v2 Authentication: https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/5e550938-91d4-459f-b67d-75d70009e3f3
-        session_base_key = hmac.new(response_key_nt, nt_proof_str, digestmod=hashlib.md5).digest()
+        session_base_key = hmac.new(response_key_nt, nt_proof_str, digestmod=CryptodomeHMD5).digest()
         # KeyExchangeKey for NTLM v2: https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/d86303b5-b29e-4fb9-b119-77579c761370
         return session_base_key
 
     # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/bf39181d-e95d-40d7-a740-ab4ec3dc363d
     def _sealkey(self):
         from Cryptodome.Cipher import ARC4
-        client_sealing_key = hashlib.new('MD5', self.exported_session_key + b'session key to client-to-server sealing key magic constant\x00').digest()
-        server_sealing_key = hashlib.new('MD5', self.exported_session_key + b'session key to server-to-client sealing key magic constant\x00').digest()
+        client_sealing_key = CryptodomeHMD5.new(self.exported_session_key + b'session key to client-to-server sealing key magic constant\x00').digest()
+        server_sealing_key = CryptodomeHMD5.new(self.exported_session_key + b'session key to server-to-client sealing key magic constant\x00').digest()
         self.client_handle = ARC4.new(client_sealing_key)
         self.server_handle = ARC4.new(server_sealing_key)
 
     # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/524cdccb-563e-4793-92b0-7bc321fce096
     def _signkey(self):
-        self.client_signing_key = hashlib.new('MD5', self.exported_session_key + b'session key to client-to-server signing key magic constant\x00').digest()
-        self.server_signing_key = hashlib.new('MD5', self.exported_session_key + b'session key to server-to-client signing key magic constant\x00').digest()
+        self.client_signing_key = CryptodomeHMD5.new(self.exported_session_key + b'session key to client-to-server signing key magic constant\x00').digest()
+        self.server_signing_key = CryptodomeHMD5.new(self.exported_session_key + b'session key to server-to-client signing key magic constant\x00').digest()
 
     # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/a92716d5-d164-4960-9e15-300f4eef44a8
     def sign(self, message, seqnum, side=CLIENT):
@@ -544,7 +544,7 @@ class NtlmClient(object):
             signing_key = self.server_signing_key
         
         version = pack("<I", 1)
-        checksum = hmac.new(signing_key, seqnum + message, digestmod=hashlib.md5).digest()[:8]
+        checksum = hmac.new(signing_key, seqnum + message, digestmod=CryptodomeHMD5).digest()[:8]
         return version + checksum + seqnum
     
     # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/a92716d5-d164-4960-9e15-300f4eef44a8

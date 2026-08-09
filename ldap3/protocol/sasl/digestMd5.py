@@ -28,6 +28,7 @@ import hashlib
 import hmac
 
 from Cryptodome.Cipher import ARC4
+from Cryptodome.Hash import MD5 as CryptodomeHMD5
 
 from ... import SEQUENCE_TYPES, ENCRYPT, SIGN
 from ...protocol.sasl.sasl import abort_sasl_negotiation, send_sasl_negotiation, random_hex_string
@@ -42,7 +43,7 @@ def md5_h(value):
     if not isinstance(value, bytes):
         value = value.encode()
 
-    return hashlib.md5(value).digest()
+    return CryptodomeHMD5.new(value).digest()
 
 
 def md5_kd(k, s):
@@ -69,7 +70,7 @@ def md5_hmac(k, s):
     if not isinstance(s, bytes):
         s = s.encode()
 
-    return hmac.new(k, s, digestmod=hashlib.md5).hexdigest()
+    return hmac.new(k, s, digestmod=CryptodomeHMD5).hexdigest()
 
 
 def sasl_digest_md5(connection, controls):

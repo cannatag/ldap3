@@ -130,7 +130,7 @@ else:
 # types for string and sequence
 if str is not bytes:  # Python 3
     STRING_TYPES = (str, )
-    SEQUENCE_TYPES = (set, list, tuple, GeneratorType, type(dict().keys()))  # dict.keys() is a iterable memoryview in Python 3
+    SEQUENCE_TYPES = (set, frozenset, list, tuple, GeneratorType, type(dict().keys()))  # dict.keys() is a iterable memoryview in Python 3
 else:  # Python 2
     try:
         from future.types.newstr import newstr

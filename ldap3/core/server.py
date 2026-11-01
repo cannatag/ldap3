@@ -495,22 +495,24 @@ class Server(object):
                 result = connection.result
                 response = connection.response
             with self.dit_lock:
-                self._schema_info = None
+                # Keep readers on the previous schema until its replacement is complete.
+                schema_info = None
                 if status:
                     if connection.strategy.sync:  # sync request
-                        self._schema_info = SchemaInfo(schema_entry, response[0]['attributes'], response[0]['raw_attributes'])
+                        schema_info = SchemaInfo(schema_entry, response[0]['attributes'], response[0]['raw_attributes'])
                     else:  # asynchronous request, must check if attributes in response
                         results, result = connection.get_response(status)
                         if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
-                            self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'], results[0]['raw_attributes'])
-                    if self._schema_info and not self._schema_info.is_valid():  # flaky servers can return an empty schema, checks if it is so and set schema to None
-                        self._schema_info = None
-                    if self._schema_info:  # if schema is valid tries to apply formatter to the "other" dict with raw values for schema and info
-                        for attribute in self._schema_info.other:
-                            self._schema_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._schema_info.raw[attribute], self.custom_formatter)
+                            schema_info = SchemaInfo(schema_entry, results[0]['attributes'], results[0]['raw_attributes'])
+                    if schema_info and not schema_info.is_valid():  # flaky servers can return an empty schema, checks if it is so and set schema to None
+                        schema_info = None
+                    if schema_info:  # if schema is valid tries to apply formatter to the "other" dict with raw values for schema and info
+                        for attribute in schema_info.other:
+                            schema_info.other[attribute] = format_attribute_values(schema_info, attribute, schema_info.raw[attribute], self.custom_formatter)
                         if self._dsa_info:  # try to apply formatter to the "other" dict with dsa info raw values
                             for attribute in self._dsa_info.other:
-                                self._dsa_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._dsa_info.raw[attribute], self.custom_formatter)
+                                self._dsa_info.other[attribute] = format_attribute_values(schema_info, attribute, self._dsa_info.raw[attribute], self.custom_formatter)
+                self._schema_info = schema_info
             if log_enabled(BASIC):
                 log(BASIC, 'schema read for <%s> via <%s>', self, connection)
 

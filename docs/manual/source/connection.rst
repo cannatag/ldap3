@@ -325,7 +325,7 @@ Result
 ======
 
 Each operation has a result stored as a dictionary in the connection.result attribute.
-You can check the result value to know if the operation has been sucessful. The dictionary has the following field:
+You can check the result value to know if the operation has been successful. The dictionary has the following field:
 
 * result: the numeric result code of the operation as specified in RFC4511
 
